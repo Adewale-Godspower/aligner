@@ -1,0 +1,1686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#1f6feb" />
+<meta name="description" content="Line a new spreadsheet up with your master sheet: match columns automatically, keep extra columns at the back, skip duplicate rows, then paste straight into Google Sheets. Runs entirely on your device." />
+<meta name="author" content="Gode-Technology" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='8'%20fill='%231f6feb'/%3E%3Cpath%20d='M23%2012.4a7%207%200%201%200%200%207.2'%20fill='none'%20stroke='white'%20stroke-width='3'%20stroke-linecap='round'/%3E%3Cpath%20d='M16%2016h7'%20stroke='white'%20stroke-width='3'%20stroke-linecap='round'/%3E%3C/svg%3E" />
+<title>Sheet Aligner — align a new sheet to your master</title>
+<style>
+  :root{
+    --bg:#f5f6f9; --card:#ffffff; --ink:#11151b; --muted:#5c6775; --line:#e4e8ef;
+    --accent:#1f6feb; --accent-d:#1552b8; --good:#0b6b45; --good-bg:#e6f6ee;
+    --warn:#8a5a00; --warn-bg:#fdf4de; --bad:#a3242b; --bad-bg:#fdecec; --gry-bg:#eef1f6;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:26px 18px 90px}
+
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.2px}
+  h2{font-size:16px;margin:0 0 4px}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:14px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+    padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .step{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .num{flex:0 0 26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+    font-size:13px;font-weight:600;display:grid;place-items:center}
+  .num.star{background:#7a5af8}
+  .hint{color:var(--muted);font-size:13px;margin:6px 0 10px}
+
+  textarea,input,select,button{font:inherit}
+  textarea{width:100%;min-height:86px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;background:#fcfdff;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.45;color:var(--ink)}
+  .inline-input{flex:1 1 200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
+    background:#fcfdff;font-size:14px;min-width:170px}
+  textarea:focus,input:focus,select:focus{outline:2px solid #bcd4fb;outline-offset:0;border-color:#9dbdf3}
+
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+  .field{flex:1 1 220px;min-width:180px}
+  label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px;
+    text-transform:uppercase;letter-spacing:.4px}
+
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:10px;
+    cursor:pointer;font-size:14px;font-weight:500}
+  .btn:hover{background:#f7f9fc}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-d)}
+  .btn.sm{padding:6px 10px;font-size:13px}
+  .btn.armed{background:var(--bad-bg);border-color:#f3c9c9;color:#8b1f26;font-weight:600}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{background:var(--gry-bg);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:12.5px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;color:#33414f}
+  .chip-extra{background:var(--warn-bg);border-color:#f0deb4;color:#6b4700}
+  .chips.sm .chip{font-size:12px;padding:3px 8px}
+  .chip{white-space:nowrap}
+  .chipline{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .chipline .chips{margin-top:0;flex:1 1 auto;min-width:0}
+  .chips.one-line{flex-wrap:nowrap;overflow:hidden;border-radius:8px}
+  .chips.one-line .chip{flex:0 0 auto}
+  .chips.one-line:not(.expanded){
+    -webkit-mask-image:linear-gradient(90deg,#000 84%,rgba(0,0,0,.25));
+    mask-image:linear-gradient(90deg,#000 84%,rgba(0,0,0,.25));
+  }
+  .chips.expanded{flex-wrap:wrap;overflow:visible;-webkit-mask-image:none;mask-image:none}
+  .chipline .link{flex:0 0 auto;white-space:nowrap}
+
+  .opts{display:flex;flex-wrap:wrap;gap:14px 20px;margin-top:12px;font-size:13.5px;color:#2b3644}
+  .opts label{display:flex;gap:7px;align-items:center;cursor:pointer}
+
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  th{background:#f7f9fc;font-weight:600;font-size:12.5px;color:#38424f;position:sticky;top:0}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+  optgroup{font-weight:700;color:#38424f}
+  .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
+  .p-good{background:var(--good-bg);color:var(--good)}
+  .p-warn{background:var(--warn-bg);color:var(--warn)}
+  .p-bad{background:var(--bad-bg);color:var(--bad)}
+  .p-gray{background:var(--gry-bg);color:var(--muted)}
+  select{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px}
+
+  .scroll{max-height:430px;overflow:auto;border-radius:10px;margin-top:10px}
+  .scroll.tall{max-height:330px}
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+  .stats{display:flex;flex-wrap:wrap;gap:8px}
+  .stat{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-size:12.5px;color:#38424f}
+  .stat b{font-weight:700;color:var(--ink)}
+
+  .note{background:var(--warn-bg);border:1px solid #f0deb4;color:#6b4700;border-radius:10px;
+    padding:10px 12px;font-size:13px;margin-top:12px}
+  .note.ok{background:var(--good-bg);border-color:#bfe6d3;color:#0b5c3c}
+  .note.bad{background:var(--bad-bg);border-color:#f3c9c9;color:#8b1f26}
+  .note.neutral{background:#f7f9fc;border-color:var(--line);color:#38424f}
+  .colref{color:#8a94a3;font-size:11px;font-weight:600;letter-spacing:.3px}
+  .note-lead{font-weight:600}
+  .nameList{display:none;margin-top:8px;padding-top:6px;border-top:1px solid rgba(0,0,0,.07);
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px 18px;max-height:250px;overflow:auto}
+  .nameList.open{display:grid}
+  .nameRow{display:flex;align-items:baseline;gap:8px;font-size:12.5px;line-height:1.5;padding:2px 0;
+    border-bottom:1px solid rgba(0,0,0,.05)}
+  .nameRow:last-child{border-bottom:0}
+  .nameRow .colref{flex:0 0 30px}
+  .nameRow .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .note .link{color:inherit;text-decoration:underline}
+  @media(max-width:700px){ .nameList.open{grid-template-columns:1fr} }
+
+  details{margin-top:10px;font-size:13.5px;color:#37424f}
+  details summary{cursor:pointer;font-weight:600;color:var(--muted)}
+  details ul{margin:8px 0 0;padding-left:20px}
+  details li{margin:4px 0}
+
+  .out{min-height:120px}
+  .site-footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);text-align:center}
+  .credit{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;
+    text-decoration:none;padding:3px 6px;border-radius:9px}
+  .credit b{color:var(--ink);font-weight:600}
+  .credit .c{color:var(--muted)}
+  .credit:hover,.credit:hover b,.credit:hover .c{color:var(--accent)}
+  .credit:focus-visible{outline:2px solid #bcd4fb;outline-offset:2px}
+  .mark{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;
+    background:var(--accent);color:#fff;transition:background .15s ease}
+  .credit:hover .mark{background:var(--accent-d)}
+  .foot-note{color:var(--muted);font-size:12px;margin:8px 0 0}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:50;display:none;
+    background:#11151b;color:#fff;border-radius:10px;padding:10px 16px;font-size:13.5px;max-width:92vw;
+    box-shadow:0 8px 24px rgba(16,24,40,.22);transition:opacity .35s ease;text-align:center}
+  .toast.warn{background:#8a5a00}
+
+  .guide{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .growseg{display:flex;gap:10px;align-items:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);
+    font-size:12.5px;line-height:1.45;background:#fff}
+  .growseg:last-child{border-bottom:0}
+  .growseg .rn{flex:0 0 46px;color:#8a94a3}
+  .growseg .cells{flex:1 1 auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+    color:#38424f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .growseg .tag{flex:0 0 auto;font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+  .g-ignored{background:#fafbfc;opacity:.62}
+  .g-ignored .tag{background:var(--gry-bg);color:var(--muted)}
+  .g-names{background:#eef4ff}
+  .g-names .cells{color:var(--accent-d);font-weight:700}
+  .g-names .tag{background:#d9e6ff;color:var(--accent-d)}
+  .g-skipped{background:#fafbfc}
+  .g-skipped .tag{background:var(--warn-bg);color:var(--warn)}
+  .g-data .cells{color:#5c6775}
+  .g-data .tag{background:var(--good-bg);color:var(--good)}
+  .gmore{padding:5px 10px;font-size:12px;color:var(--muted);background:#fafbfc}
+</style>
+</head>
+<body>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript>
+  <div class="wrap" style="padding-bottom:0">
+    <div class="note bad" style="margin-top:20px">
+      <b>This tool needs JavaScript.</b> Please open it in Chrome, Edge, Firefox or Safari. Nothing is sent anywhere &mdash; the script only runs inside your own browser.
+    </div>
+  </div>
+</noscript>
+<div class="wrap">
+  <h1>Sheet Aligner</h1>
+  <p class="sub">Paste your main sheet's columns once, save that as a type, then paste any new sheet &mdash; the columns are re-ordered to match.</p>
+
+  <!-- TYPES -->
+  <section class="card">
+    <div class="step"><div class="num star">&#9733;</div><h2>Save Your Types</h2></div>
+    <p class="hint">One type per tab &mdash; Type 1&ndash;9 and the Validation Call sheet. Save each once, then pick it before pasting a new sheet.</p>
+    <div class="row">
+      <div class="field" style="flex:1 1 230px">
+        <label class="lbl" for="profileSel">Your saved types</label>
+        <select id="profileSel"></select>
+      </div>
+      <div class="field" style="flex:1 1 230px">
+        <label class="lbl" for="profileName">Name this type</label>
+        <input class="inline-input" id="profileName" placeholder="Type 1 - Retail Seller" />
+      </div>
+      <button type="button" class="btn primary" id="btnSaveProfile">Save this type</button>
+      <button type="button" class="btn" id="btnDeleteProfile">Delete</button>
+    </div>
+    <div class="hint" id="profileMsg">Not saved yet.</div>
+    <div class="row" style="margin-top:10px">
+      <button type="button" class="btn sm" id="btnExportProfile">Export this type</button>
+      <button type="button" class="btn sm" id="btnCopyProfile">Copy share code</button>
+      <label class="btn sm" for="importFile" style="display:inline-block;margin:0">Import a type file<input type="file" id="importFile" accept=".json,application/json" style="display:none" /></label>
+    </div>
+    <details>
+      <summary>Import a type someone sent me</summary>
+      <p class="hint" style="margin-top:8px">Paste the code a colleague sent you and import it.</p>
+      <textarea id="importCode" placeholder="Setup code&hellip;"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn sm" id="btnImportCode">Import this code</button></div>
+    </details>
+    <details>
+      <summary>Rolling it out to the office</summary>
+      <ul>
+        <li><b>Send the file around.</b> One HTML file &mdash; no install, no account, no internet.</li>
+        <li><b>Each person saves their own types</b> once; they load automatically after that.</li>
+        <li><b>Share a type</b> with Copy share code, or send the exported file.</li>
+        <li><b>Types never hold your data</b> &mdash; column names and rules only.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- STEP 1 -->
+  <section class="card">
+    <div class="step"><div class="num">1</div><h2>Your master sheet</h2></div>
+    <p class="hint">Paste this type's columns, or the whole tab.</p>
+    <textarea id="masterText" placeholder="Customer ID	state	created_at	updated_at	surveyor_name"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 1 190px">
+        <label class="lbl" for="masterHeaderRow">Column names on row</label>
+        <input class="inline-input" id="masterHeaderRow" type="number" min="1" step="1" value="1" />
+      </div>
+      <div class="field" style="flex:0 1 190px">
+        <label class="lbl" for="masterDataRow">First data row</label>
+        <input class="inline-input" id="masterDataRow" type="number" min="1" step="1" value="2" />
+      </div>
+      <div class="hint" style="flex:1 1 300px;margin:8px 0 0">1 and 2 for most sheets. The picture below shows what was read.</div>
+    </div>
+    <div id="masterGuide"></div>
+    <div class="chipline">
+      <div class="chips one-line" id="masterChips"></div>
+      <button type="button" class="link" id="masterChipsToggle" aria-expanded="false" hidden>Show all</button>
+    </div>
+    <div id="masterNote"></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card">
+    <div class="step"><div class="num">2</div><h2>The new sheet coming in</h2></div>
+    <p class="hint">Copy the new sheet or tab and paste it here.</p>
+    <textarea id="incText" placeholder="Inv Date	Client	Invoice Number	Qty	Total"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div class="field" style="flex:0 1 190px">
+        <label class="lbl" for="incHeaderRow">Column names on row</label>
+        <input class="inline-input" id="incHeaderRow" type="number" min="1" step="1" value="1" />
+      </div>
+      <div class="field" style="flex:0 1 190px">
+        <label class="lbl" for="incDataRow">First data row</label>
+        <input class="inline-input" id="incDataRow" type="number" min="1" step="1" value="2" />
+      </div>
+    </div>
+    <div id="incGuide"></div>
+    <div class="row" style="margin-top:12px">
+      <div class="field">
+        <label class="lbl" for="dedupe">Duplicates</label>
+        <select id="dedupe"></select>
+      </div>
+      <div class="field">
+        <label class="lbl" for="extrasMode">Extra columns</label>
+        <select id="extrasMode">
+          <option value="append">Keep them, at the back</option>
+          <option value="drop">Leave them out</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="lbl" for="trim">Clean up</label>
+        <select id="trim">
+          <option value="on">Tidy up spaces</option>
+          <option value="off">Leave as pasted</option>
+        </select>
+      </div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="incHasHeader" checked> First row of the new sheet is column names</label>
+      <label><input type="checkbox" id="skipHeaderLike" checked> Skip rows that repeat the column names</label>
+    </div>
+    <div class="bar">
+      <div class="stats" id="incStats"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn sm" id="btnDemo">Load demo</button>
+        <button type="button" class="btn sm primary" id="btnRun">Re-align</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="card">
+    <div class="step"><div class="num">3</div><h2>Column matching</h2></div>
+    <p class="hint">Done automatically &mdash; change anything it got wrong. Your columns always come first; anything new is added at the back.</p>
+    <div id="mapArea"></div>
+    <details>
+      <summary>Matching rules</summary>
+      <p class="hint" style="margin-top:8px">One per line: <span class="mono">name in the new sheet = name in your master</span>. Corrections from the table above are added here automatically. <span class="mono">#skip</span> always leaves a column out, <span class="mono">#append</span> always keeps it at the back.</p>
+      <textarea id="rulesText" placeholder="delivery town = region&#10;junk column = #skip"></textarea>
+      <div class="row" style="margin-top:8px"><button type="button" class="btn sm" id="btnClearRules">Clear remembered rules</button></div>
+    </details>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card">
+    <div class="step"><div class="num">4</div><h2>Result &mdash; copy into your master</h2></div>
+    <p class="hint">Paste at the first empty row of column A.</p>
+    <div id="outNotes"></div>
+    <div class="scroll tall" id="previewArea"></div>
+    <div class="bar">
+      <div class="stats" id="outStats"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn sm" id="btnCopy">Copy for Sheets</button>
+        <button type="button" class="btn sm" id="btnCsv">Download CSV</button>
+      </div>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="keepExtras" checked> Keep the columns added at the back</label>
+      <label><input type="checkbox" id="outHasHeader"> Add a column-names line at the top (new sheet only)</label>
+    </div>
+    <details>
+      <summary>Copy blocked, or pasted rows look plainer than the rest?</summary>
+      <ul>
+        <li><b>Copy blocked:</b> click the box below and press Ctrl/Cmd+C.</li>
+        <li><b>Borders, fonts, colours:</b> this tool copies <i>values</i>, not formatting &mdash; those come from your sheet. Apply borders to a wide range once (say <span class="mono">A4:AY1000</span>, via the Name box) and every future paste will sit inside them. Or copy one formatted row and use <i>Paste special &rarr; Format only</i> on the new rows.</li>
+      </ul>
+    </details>
+    <textarea id="output" class="out" readonly spellcheck="false" placeholder="Output appears here&hellip;"></textarea>
+  </section>
+
+  <footer class="site-footer" role="contentinfo">
+    <a class="credit" href="http://adewale-godspower.github.io/portfolio/" target="_blank" rel="noopener noreferrer"
+       title="Gode-Technology &mdash; portfolio">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19.5 11.5a7.5 7.5 0 1 1-2.2-5.3" />
+          <path d="M12 12h7.5" />
+        </svg>
+      </span>
+      <span>Developed by <b>Gode-Technology</b><span class="c">&nbsp;&copy;&nbsp;</span>2026</span>
+    </a>
+    <p class="foot-note">Sheet Aligner <span id="appVersion">&nbsp;</span> &middot; runs on your device, nothing is uploaded anywhere</p>
+  </footer>
+</div>
+
+<script>
+/* ===================== LOGIC START ===================== */
+/* Everything in this block is pure logic (no DOM) so it can be tested. */
+
+var ABBR = {
+  no:'number', num:'number', numb:'number', qty:'quantity', amt:'amount',
+  desc:'description', dsc:'description', dept:'department', mgr:'manager',
+  cust:'customer', acct:'account', tel:'phone', ph:'phone', mob:'mobile',
+  addr:'address', inv:'invoice', rep:'representative', sr:'serial', sn:'serial',
+  sno:'serial', pct:'percent', bal:'balance', org:'organisation', tot:'total',
+  val:'value', curr:'currency', std:'standard', ref:'reference', cat:'category'
+};
+var STOP = {'of':1,'the':1,'and':1,'for':1,'to':1,'in':1,'per':1,'by':1,'with':1,
+  'a':1,'an':1,'from':1,'on':1,'at':1,'is':1,'only':1};
+
+function stripAccents(s){
+  return s && s.normalize ? s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'') : String(s == null ? '' : s);
+}
+function normalize(s){
+  return stripAccents(String(s == null ? '' : s))
+    .toLowerCase()
+    .replace(/[_\/\\|]/g,' ')
+    .replace(/[^a-z0-9%]+/g,' ')
+    .trim()
+    .replace(/\s+/g,' ');
+}
+function stem(t){
+  return (t.length > 3 && t.charAt(t.length-1) === 's' && t.substr(-2) !== 'ss') ? t.slice(0,-1) : t;
+}
+function tokenize(norm){
+  if(!norm) return [];
+  var out = [];
+  norm.split(' ').forEach(function(t){
+    var x = ABBR[t] || t;
+    if(x && !STOP[x]){ x = stem(x); if(x) out.push(x); }
+  });
+  return out;
+}
+function bigrams(s){
+  var m = {}, i, g;
+  if(s.length < 2){ if(s.length === 1) m[s] = 1; return m; }
+  for(i = 0; i < s.length - 1; i++){ g = s.substr(i,2); m[g] = (m[g]||0) + 1; }
+  return m;
+}
+function dice(a,b){
+  if(!a || !b) return 0;
+  if(a === b) return 1;
+  var ma = bigrams(a), mb = bigrams(b), hit = 0, na = 0, nb = 0, k;
+  for(k in ma) na += ma[k];
+  for(k in mb) nb += mb[k];
+  for(k in ma) if(mb[k]) hit += Math.min(ma[k], mb[k]);
+  return (2 * hit) / (na + nb);
+}
+function jaccard(a,b){
+  var A = {}, B = {}, i, inter = 0, uni = 0, k;
+  for(i = 0; i < a.length; i++) A[a[i]] = 1;
+  for(i = 0; i < b.length; i++) B[b[i]] = 1;
+  for(k in A){ uni++; if(B[k]) inter++; }
+  for(k in B) if(!A[k]) uni++;
+  return uni ? inter / uni : 0;
+}
+/* true when every meaningful word of `needle` also appears in `hay` */
+function phraseInside(needle, hay){
+  var a = tokenize(needle), b = tokenize(hay);
+  if(!a.length || !b.length) return false;
+  var setB = {};
+  b.forEach(function(x){ setB[x] = 1; });
+  return a.every(function(x){ return !!setB[x]; });
+}
+/* Score 0..1 — how likely these two headers mean the same column. */
+function pairScore(aHead, bHead, aliases){
+  var a = normalize(aHead), b = normalize(bHead);
+  if(!a || !b) return 0;
+  if(a === b) return 1;
+  if(aliases){
+    var t = aliases[a];
+    if(t){ if(t === b) return 0.98; if(phraseInside(t, b)) return 0.93; }
+    var u = aliases[b];
+    if(u){ if(u === a) return 0.98; if(phraseInside(u, a)) return 0.93; }
+  }
+  var ta = tokenize(a), tb = tokenize(b);
+  var score = 0;
+  if(ta.length && ta.join(' ') === tb.join(' ')) return 0.95;
+  var jac = jaccard(ta, tb);
+  var minLen = Math.min(ta.length, tb.length);
+  var shared = 0;
+  var setB = {};
+  tb.forEach(function(x){ setB[x] = 1; });
+  ta.forEach(function(x){ if(setB[x]) shared++; });
+  if(minLen > 0 && shared === minLen){
+    score = Math.max(score, ta.length === tb.length ? 0.94 : 0.86);
+  }
+  score = Math.max(score, jac * 0.9);
+  score = Math.max(score, dice(ta.join(''), tb.join('')) * 0.8);
+  return score;
+}
+/* Greedy best-first one-to-one assignment. */
+function buildMapping(inHeaders, masterHeaders, aliasPairs, threshold, positional){
+  var aliases = {};
+  (aliasPairs || []).forEach(function(p){
+    var k = normalize(p[0]);
+    if(k) aliases[k] = normalize(p[1]);
+  });
+  threshold = threshold == null ? 0.6 : threshold;
+  var pairs = [], i, j, s;
+  for(i = 0; i < inHeaders.length; i++){
+    for(j = 0; j < masterHeaders.length; j++){
+      s = pairScore(inHeaders[i], masterHeaders[j], aliases);
+      if(s >= threshold) pairs.push({ i:i, j:j, s:s });
+    }
+  }
+  pairs.sort(function(x,y){ return y.s - x.s || x.i - y.i; });
+  var row = {}, usedM = {};
+  pairs.forEach(function(p){
+    if(row[p.i] != null || usedM[p.j]) return;
+    row[p.i] = { match: masterHeaders[p.j], score: p.s };
+    usedM[p.j] = true;
+  });
+  /* No header row to match on: line the columns up by position (1st -> 1st, 2nd -> 2nd ...).
+     Flagged as a low score so the UI asks you to confirm. */
+  if(positional){
+    inHeaders.forEach(function(h, i){
+      if(row[i] != null) return;
+      if(i >= masterHeaders.length || usedM[i]) return;
+      row[i] = { match: masterHeaders[i], score: 0.75 };
+      usedM[i] = true;
+    });
+  }
+  return inHeaders.map(function(h, idx){
+    return { header: h, match: row[idx] ? row[idx].match : null, score: row[idx] ? row[idx].score : 0 };
+  });
+}
+function detectDelim(text){
+  var line = String(text).split(/\r?\n/)[0] || '';
+  var tabs = (line.match(/\t/g)||[]).length;
+  var commas = (line.match(/,/g)||[]).length;
+  var semis = (line.match(/;/g)||[]).length;
+  if(tabs > 0 && tabs >= commas && tabs >= semis) return '\t';
+  if(semis > commas) return ';';
+  return commaOk(line) ? ',' : '\t';
+}
+function commaOk(line){ return line.indexOf(',') >= 0; }
+function parseDelimited(text, delim){
+  var rows = [], row = [], field = '', inQ = false, i, c, t = String(text == null ? '' : text);
+  for(i = 0; i < t.length; i++){
+    c = t.charAt(i);
+    if(inQ){
+      if(c === '"'){ if(t.charAt(i+1) === '"'){ field += '"'; i++; } else inQ = false; }
+      else field += c;
+    } else if(c === '"'){ inQ = true; }
+    else if(c === delim){ row.push(field); field = ''; }
+    else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+    else if(c !== '\r'){ field += c; }
+  }
+  row.push(field); rows.push(row);
+  return rows;
+}
+function isBlankRow(r){
+  if(!r || !r.length) return true;
+  for(var i = 0; i < r.length; i++){ if(String(r[i] == null ? '' : r[i]).trim() !== '') return false; }
+  return true;
+}
+/* Trailing blank lines (from selecting a bit too much in Sheets) are harmless,
+   but blank rows in the middle are kept so row numbers stay true to the sheet. */
+function trimBlankEdges(rows){
+  var out = rows.slice();
+  while(out.length && isBlankRow(out[out.length - 1])) out.pop();
+  return out;
+}
+function normalizeWidth(rows, width){
+  return rows.map(function(r){
+    var c = r.slice(0, width);
+    while(c.length < width) c.push('');
+    return c;
+  });
+}
+function headerRowNumber(id){
+  var n = parseInt($(id).value, 10);
+  return (isFinite(n) && n > 0) ? n : 1;
+}
+/* Rows that merely repeat the column names (a second header line, or a labels row)
+   are not data. Kobo/ODK exports are full of them, and a pasted output that started
+   with a column-names line looks exactly the same. */
+function knownNameSet(groups){
+  var set = {};
+  groups.forEach(function(list){
+    (list || []).forEach(function(n){
+      var k = normalize(n);
+      if(k) set[k] = 1;
+    });
+  });
+  return set;
+}
+function headerLikeRow(row, known){
+  var nonEmpty = 0, hits = 0;
+  (row || []).forEach(function(v){
+    var n = normalize(v);
+    if(n === '') return;
+    nonEmpty++;
+    if(known[n]) hits++;
+  });
+  if(nonEmpty < 3) return false;
+  return hits >= 3 && (hits / nonEmpty) >= 0.5;
+}
+function dropHeaderLikeRows(rows, known, enabled){
+  if(!enabled) return { rows: rows.slice(), skipped: 0, samples: [] };
+  var kept = [], samples = [];
+  rows.forEach(function(r, i){
+    if(headerLikeRow(r, known)){ if(samples.length < 3) samples.push(i + 1); return; }
+    kept.push(r);
+  });
+  return { rows: kept, skipped: rows.length - kept.length, samples: samples };
+}
+/* Spreadsheet column letter for an output position: 0 -> A, 25 -> Z, 26 -> AA.
+   Lets someone check a wide master (DU, EB, ...) without counting columns. */
+function colLetter(i){
+  var n = i + 1, out = '';
+  while(n > 0){
+    var r = (n - 1) % 26;
+    out = String.fromCharCode(65 + r) + out;
+    n = Math.floor((n - 1) / 26);
+  }
+  return out;
+}
+/* Two columns with the same name are one column split in two \u2014 common in Kobo/ODK
+   exports (a repeat group, or the same question asked twice). They are folded together
+   before matching so both land in the same column of the master, first non-empty value winning. */
+function mergeDuplicateColumns(headers, rows){
+  var groups = {}, order = [];
+  headers.forEach(function(h, idx){
+    var k = normalize(h);
+    if(!groups[k]){ groups[k] = { name: h, idxs: [] }; order.push(k); }
+    groups[k].idxs.push(idx);
+  });
+  var keep = order.map(function(k){ return groups[k]; });
+  var merged = [], conflicts = 0;
+  keep.forEach(function(g){
+    if(g.idxs.length > 1) merged.push({ name: g.name, count: g.idxs.length });
+  });
+  var outRows = rows.map(function(r){
+    return keep.map(function(g){
+      var val = '';
+      g.idxs.forEach(function(idx){
+        var v = String(r[idx] == null ? '' : r[idx]);
+        if(v.trim() === '') return;
+        if(val === '') val = v;
+        else if(v !== val) conflicts++;
+      });
+      return val;
+    });
+  });
+  return {
+    headers: keep.map(function(g){ return g.name; }),
+    rows: outRows,
+    merged: merged,
+    conflicts: conflicts,
+    dropped: rows.length ? Math.max(0, headers.length - keep.length) : 0
+  };
+}
+/* Columns that are filled on some rows and empty on others \u2014 usually a misalignment
+   or a genuinely optional field. Worth showing, not worth shouting about. */
+function gapReport(rows, headers){
+  var out = [];
+  if(!rows.length) return out;
+  headers.forEach(function(h, j){
+    var blanks = 0;
+    rows.forEach(function(r){
+      var v = r[j];
+      if(v == null || String(v).trim() === '') blanks++;
+    });
+    if(blanks > 0 && blanks < rows.length) out.push({ header: h, col: colLetter(j), blanks: blanks });
+  });
+  return out;
+}
+/* A data row wider than the column names usually means the wrong row was used for names. */
+function widthNote(rows, headers){
+  var max = 0;
+  rows.forEach(function(r){ if(r.length > max) max = r.length; });
+  if(max > headers.length){
+    return 'Some rows have more cells than the ' + headers.length + ' column names read \u2014 the extra cells are ignored. Check the two row numbers above.';
+  }
+  return '';
+}
+function dataRowNumber(id, headerRow){
+  var n = parseInt($(id).value, 10);
+  if(!isFinite(n) || n < headerRow + 1) return headerRow + 1;
+  return n;
+}
+
+function parseAliasRules(text){
+  var out = [];
+  String(text || '').split(/\r?\n/).forEach(function(line){
+    if(!line.trim() || line.trim().charAt(0) === '#') return;
+    var m = line.split(/\s*=\s*/);
+    if(m.length < 2) m = line.split(/\s*->\s*/);
+    if(m.length >= 2 && m[0].trim() && m[1].trim()) out.push([m[0].trim(), m[1].trim()]);
+  });
+  return out;
+}
+function clean(v, trim){
+  var s = v == null ? '' : String(v);
+  if(trim) s = s.replace(/\s+/g,' ');
+  return s.trim();
+}
+/* Build the final output layout.
+   Your master's columns come first, in master order. Every column from the new sheet
+   that has no home in the master gets APPENDED after them, in the new sheet's own order.
+   Returns { headers: [...], targets: [output column index per mapping entry, -1 = left out] } */
+function buildLayout(mapping, masterHeaders){
+  var headers = masterHeaders.slice();
+  var targets = [];
+  mapping.forEach(function(m){
+    if(m.match != null){
+      targets.push(masterHeaders.indexOf(m.match));
+    } else if(m.extra === true){
+      targets.push(headers.length);
+      headers.push(uniqueHeader(m.header, headers));
+    } else {
+      targets.push(-1);
+    }
+  });
+  return { headers: headers, targets: targets };
+}
+/* Never let two appended columns end up with the same header name. */
+function uniqueHeader(name, headers){
+  var base = String(name == null ? '' : name).trim() || 'Untitled';
+  var h = base, n = 2;
+  while(headers.indexOf(h) >= 0){ h = base + ' (' + n + ')'; n++; }
+  return h;
+}
+/* Turn raw input rows into output rows, dropping each cell into its target column. */
+function alignRows(inRows, targets, width, opts){
+  var trim = !opts || opts.trim !== false;
+  return inRows.map(function(r){
+    var line = [], j;
+    for(j = 0; j < width; j++) line.push('');
+    targets.forEach(function(t, idx){
+      if(t == null || t < 0) return;
+      line[t] = clean(r[idx] == null ? '' : r[idx], trim);
+    });
+    return line;
+  });
+}
+/* Rows already in the master, widened to the output layout so they can be compared. */
+function masterToOutput(rows, masterHeaders, outHeaders){
+  return rows.map(function(r){
+    var line = outHeaders.map(function(){ return ''; });
+    masterHeaders.forEach(function(h, i){
+      var j = outHeaders.indexOf(h);
+      if(j >= 0) line[j] = clean(r[i] == null ? '' : r[i], true);
+    });
+    return line;
+  });
+}
+/* What a dropdown choice in step 3 means for one column. */
+function applyMappingChoice(m, value){
+  if(value === '__extra'){ m.match = null; m.extra = true; m.score = 0; }
+  else if(value === '__drop'){ m.match = null; m.extra = false; m.score = 0; }
+  else { m.match = value || null; m.extra = false; m.score = value ? 1 : 0; }
+  return m;
+}
+function dedupeKey(row, mode, headers){
+  if(mode === 'off') return null;
+  if(mode === 'all'){
+    return row.map(function(v){ return normalize(v); }).join('\u0001');
+  }
+  var j = headers.indexOf(mode);
+  if(j < 0) return null;
+  var v = normalize(row[j]);
+  return v === '' ? null : 'k\u0001' + j + '\u0001' + v;
+}
+function dropDuplicates(rows, mode, outHeaders, existingRows){
+  var seen = {}, kept = [], dropped = 0;
+  (existingRows || []).forEach(function(r){
+    var k = dedupeKey(r, mode, outHeaders);
+    if(k) seen[k] = 1;
+  });
+  rows.forEach(function(r){
+    var k = dedupeKey(r, mode, outHeaders);
+    if(k && seen[k]){ dropped++; return; }
+    if(k) seen[k] = 1;
+    kept.push(r);
+  });
+  return { rows: kept, dropped: dropped };
+}
+function toTSV(rows){
+  return rows.map(function(r){
+    return r.map(function(v){
+      return String(v == null ? '' : v).replace(/\t/g,' ').replace(/\r?\n/g,' ');
+    }).join('\t');
+  }).join('\n');
+}
+function toCSV(rows){
+  return rows.map(function(r){
+    return r.map(function(v){
+      var s = String(v == null ? '' : v);
+      return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(',');
+  }).join('\r\n');
+}
+/* ===================== LOGIC END ===================== */
+
+/* ---------------- demo data ---------------- */
+var DEMO_MASTER = [
+  ['Date','Customer Name','Invoice No.','Item Description','Quantity','Unit Price','Amount (NGN)','Sales Rep','Region','Status'],
+  ['2026-08-03','Zenith Retail Ltd','INV-1001','Blue widget, 2m','12','4500','54000','A. Bello','Lagos','Paid'],
+  ['2026-08-04','Kano Agro Supplies','INV-1002','Packaging tape','40','900','36000','M. Yusuf','Kano','Paid']
+];
+var DEMO_NEW = [
+  ['Inv Date','Client','Invoice Number','Item Description','Qty','Unit Price (₦)','Total','Rep','Area','Delivery Town','Invoice Notes','Packing List Ref'],
+  ['04/08/2026','Kano Agro Supplies','INV-1002','Packaging tape','40','900','36000','M. Yusuf','Kano','Kano','re-send copy','PL-88'],
+  ['07/08/2026','Delta Foods Plc','INV-1003','Heat sealer','3','78,500','235500','A. Bello','Asaba','Asaba','','PL-91'],
+  ['11/08/2026','Lekki Fresh Stores','INV-1004','Blue widget, 2m','25','4,500','112500','C. Okafor','Lagos','Ikeja','',''],
+  ['12/08/2026','Ibadan Textiles','INV-1005','Label rolls','100','650','65000','M. Yusuf','Oyo','Dugbe','urgent','PL-95']
+];
+
+/* ---------------- DOM ---------------- */
+var $ = function(id){ return document.getElementById(id); };
+var APP_VERSION = '1.3';
+var state = { masterHeaders: [], masterRows: [], inHeaders: [], inRows: [], mapping: [], layout: null, outHeaders: [], copyCols: 0, outRows: [], dropped: 0, positional: false, headerRowWarn: '', widthWarn: '', bigSheet: false, headerLikeSkipped: 0, headerLikeSamples: [], mergedDupes: [], mergedConflicts: 0, dedupeMode: 'off', dedupeFallback: false, dedupeBroken: false, dedupeAllBlank: false };
+
+/* ---------------- saved setups (profiles) ----------------
+   Each person's setup is kept on their own machine. If the browser refuses
+   local storage (some locked-down setups), we fall back to memory so the
+   tool still works for the session, and export/import still travels fine. */
+var PROFILE_KEY = 'sheetAlign.setups.v1';
+var store = (function(){
+  try{
+    var ls = (typeof window !== 'undefined' && window.localStorage) ? window.localStorage : null;
+    if(ls){ ls.setItem('__sa_probe','1'); ls.removeItem('__sa_probe'); return ls; }
+  }catch(e){}
+  var mem = {};
+  return {
+    getItem: function(k){ return Object.prototype.hasOwnProperty.call(mem,k) ? mem[k] : null; },
+    setItem: function(k,v){ mem[k] = String(v); },
+    removeItem: function(k){ delete mem[k]; }
+  };
+})();
+var storageWorks = (function(){
+  try{ store.setItem('__sa_probe','1'); store.removeItem('__sa_probe'); return true; }catch(e){ return false; }
+})();
+
+function readSetups(){
+  var d = { current:'', items:{} };
+  try{
+    var raw = store.getItem(PROFILE_KEY);
+    if(raw){
+      var o = JSON.parse(raw);
+      if(o && typeof o === 'object'){
+        d.current = (typeof o.current === 'string') ? o.current : '';
+        d.items = (o.items && typeof o.items === 'object') ? o.items : {};
+      }
+    }
+  }catch(e){}
+  return d;
+}
+function writeSetups(d){
+  try{ store.setItem(PROFILE_KEY, JSON.stringify(d)); return true; }catch(e){ return false; }
+}
+function collectSetup(name){
+  return {
+    v: 1,
+    app: 'sheet-aligner',
+    version: APP_VERSION,
+    name: name,
+    masterHeaders: state.masterHeaders.slice(),
+    rules: $('rulesText').value,
+    settings: {
+      extrasMode: $('extrasMode').value,
+      trim: $('trim').value,
+      keepExtras: $('keepExtras').checked,
+      outHasHeader: $('outHasHeader').checked,
+      incHasHeader: $('incHasHeader').checked,
+      skipHeaderLike: $('skipHeaderLike').checked,
+      masterHeaderRow: $('masterHeaderRow').value,
+      masterDataRow: $('masterDataRow').value,
+      incHeaderRow: $('incHeaderRow').value,
+      incDataRow: $('incDataRow').value
+    }
+  };
+}
+/* Pasted master text is only kept in memory for the session, per type, and is
+   never stored in a saved type \u2014 so share codes never carry anyone's data. */
+var sessionMaster = {};
+function applySetup(p, masterTextForThisType){
+  if(!p || typeof p !== 'object') return false;
+  setRules(p.rules == null ? '' : p.rules);
+  var st = p.settings || {};
+  if(st.extrasMode) $('extrasMode').value = st.extrasMode;
+  if(st.trim) $('trim').value = st.trim;
+  if(typeof st.keepExtras === 'boolean') $('keepExtras').checked = st.keepExtras;
+  if(typeof st.outHasHeader === 'boolean') $('outHasHeader').checked = st.outHasHeader;
+  if(typeof st.incHasHeader === 'boolean') $('incHasHeader').checked = st.incHasHeader;
+  if(typeof st.skipHeaderLike === 'boolean') $('skipHeaderLike').checked = st.skipHeaderLike;
+  if(st.masterHeaderRow) $('masterHeaderRow').value = st.masterHeaderRow;
+  if(st.masterDataRow) $('masterDataRow').value = st.masterDataRow;
+  if(st.incHeaderRow) $('incHeaderRow').value = st.incHeaderRow;
+  if(st.incDataRow) $('incDataRow').value = st.incDataRow;
+  /* Put this type's columns into step 1. Data rows from one tab must never be
+     carried onto another tab, so the body is used only when it belongs to this
+     same type (i.e. it was pasted in this session for this type). */
+  if(masterTextForThisType != null && masterTextForThisType !== ''){
+    $('masterText').value = masterTextForThisType;
+  } else {
+    $('masterText').value = (p.masterHeaders && p.masterHeaders.length) ? p.masterHeaders.join('\t') : '';
+  }
+  return true;
+}
+function headersLookLike(a, b){
+  if(!a.length || !b.length) return true;
+  var hits = 0;
+  a.forEach(function(h){ if(b.indexOf(h) >= 0) hits++; });
+  return (hits / a.length) >= 0.5;
+}
+function nameOfCurrent(){ return readSetups().current; }
+function savedNames(){
+  var items = readSetups().items;
+  return Object.keys(items).sort(function(a,b){ return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+}
+function saveSetupAs(name){
+  name = String(name == null ? '' : name).trim();
+  if(!name) return false;
+  var d = readSetups();
+  d.items[name] = collectSetup(name);
+  d.current = name;
+  sessionMaster[name] = $('masterText').value;
+  var ok = writeSetups(d);
+  refreshSetupSelect();
+  setProfileMsg(ok ? '"' + name + '" saved on this computer. Corrections are added to it automatically.'
+                   : 'This browser will not let the tool save here \u2014 use Export to keep a copy.');
+  if(ok) toast('Saved type "' + name + '"');
+  return ok;
+}
+function autosaveSetup(){
+  var d = readSetups();
+  if(!d.current || !d.items[d.current]){
+    setProfileMsg('Not saved yet \u2014 name it above and press "Save this type".');
+    return;
+  }
+  if(!state.masterHeaders.length) return;   // nothing read yet: leave the saved type alone
+  /* Never quietly paste one type's columns over another type's saved columns. */
+  var saved = d.items[d.current];
+  var copy = collectSetup(d.current);
+  if(saved.masterHeaders && saved.masterHeaders.length && state.masterHeaders.length &&
+     !headersLookLike(state.masterHeaders, saved.masterHeaders)){
+    copy.masterHeaders = saved.masterHeaders.slice();
+    d.items[d.current] = copy;
+    writeSetups(d);
+    setProfileMsg('These columns do not look like your saved type "' + d.current + '" \u2014 nothing was saved over it. Use "Save this type" to add them as a new type.');
+    return;
+  }
+  d.items[d.current] = copy;
+  if(!writeSetups(d)) setProfileMsg('Could not save automatically here \u2014 use Export to keep a copy.');
+}
+function loadSetupByName(name){
+  var d = readSetups();
+  if(!name || !d.items[name]) return false;
+  if(d.current && d.current !== name && $('masterText').value.trim()){
+    /* Remember this session's paste for the type we are leaving \u2014 but only when it
+       really is that type, so a stray paste cannot follow you into the wrong tab. */
+    var leaving = d.items[d.current];
+    if(!leaving || !leaving.masterHeaders || !leaving.masterHeaders.length ||
+       headersLookLike(state.masterHeaders, leaving.masterHeaders)){
+      sessionMaster[d.current] = $('masterText').value;
+    }
+  }
+  d.current = name;
+  writeSetups(d);
+  applySetup(d.items[name], sessionMaster[name]);
+  refreshSetupSelect();
+  setProfileMsg('Using type "' + name + '".');
+  return true;
+}
+function deleteSetupByName(name){
+  var d = readSetups();
+  if(!name || !d.items[name]) return false;
+  delete d.items[name];
+  if(d.current === name) d.current = '';
+  writeSetups(d);
+  refreshSetupSelect();
+  setProfileMsg('Deleted "' + name + '".');
+  return true;
+}
+function setupExportText(name){
+  var d = readSetups();
+  var p = d.items[name || d.current] || collectSetup(name || d.current || 'Untitled setup');
+  return JSON.stringify(p, null, 2);
+}
+function setupImportText(text){
+  var p;
+  try{ p = JSON.parse(String(text || '').trim()); }catch(e){ return { ok:false, error:'That does not look like a setup code.' }; }
+  if(!p || typeof p !== 'object' || (!p.masterHeaders && !p.rules && !p.settings)){
+    return { ok:false, error:'That setup code is missing its contents.' };
+  }
+  var name = String(p.name || 'Imported setup').trim() || 'Imported setup';
+  var d = readSetups();
+  if(d.items[name]) name = name + ' (imported)';
+  p.name = name;
+  d.items[name] = p;
+  d.current = name;
+  writeSetups(d);
+  applySetup(p);
+  refreshSetupSelect();
+  setProfileMsg('Imported "' + name + '".');
+  toast('Imported type "' + name + '"');
+  return { ok:true, name:name };
+}
+function refreshSetupSelect(){
+  var d = readSetups();
+  var sel = $('profileSel');
+  var names = Object.keys(d.items).sort(function(a,b){ return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  var html = '<option value="">' + (names.length ? '\u2014 pick a type \u2014' : 'no types saved yet') + '</option>';
+  names.forEach(function(n){
+    html += '<option value="' + esc(n) + '">' + esc(n) + '</option>';
+  });
+  sel.innerHTML = html;
+  sel.value = (d.current && names.indexOf(d.current) >= 0) ? d.current : '';
+  $('profileName').value = d.current || $('profileName').value;
+}
+
+/* ---------------- remembering corrections ---------------- */
+function setRules(text){ $('rulesText').value = (text == null ? '' : String(text)); }
+function ruleLines(){
+  return $('rulesText').value.split(/\r?\n/)
+    .map(function(l){ return l.trim(); })
+    .filter(function(l){ return l !== '' && l.charAt(0) !== '#'; });
+}
+function ruleKeyOf(line){
+  var pr = parseAliasRules(line);
+  return pr.length ? normalize(pr[0][0]) : '';
+}
+/* Add (or update) a permanent rule for one incoming column name. */
+function learnRule(inHeader, target){
+  var lines = ruleLines().filter(function(l){ return ruleKeyOf(l) !== normalize(inHeader); });
+  lines.push(String(inHeader) + ' = ' + String(target));
+  setRules(lines.join('\n'));
+  return lines.length;
+}
+/* Rules that say "always skip" / "always append", e.g. junk column = #skip */
+function decisionIndex(text){
+  var out = {};
+  parseAliasRules(text).forEach(function(pr){
+    var t = String(pr[1] || '').trim().toLowerCase();
+    if(t === '#skip' || t === '#drop') out[normalize(pr[0])] = 'skip';
+    else if(t === '#append' || t === '#keep') out[normalize(pr[0])] = 'append';
+  });
+  return out;
+}
+function applyDecisions(mapping){
+  var dec = decisionIndex($('rulesText').value);
+  mapping.forEach(function(m){
+    var d = dec[normalize(m.header)];
+    if(d === 'skip'){ m.match = null; m.extra = false; m.score = 1; }
+    else if(d === 'append'){ m.match = null; m.extra = true; m.score = 1; }
+  });
+  return mapping;
+}
+
+/* ---------------- little feedback helpers ---------------- */
+var toastTimer = null;
+function toast(msg, kind){
+  var el = $('toast');
+  if(!el) return;
+  el.className = 'toast' + (kind === 'warn' ? ' warn' : '');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){
+    el.style.opacity = '0';
+    setTimeout(function(){ el.style.display = 'none'; }, 400);
+  }, 3200);
+}
+function setProfileMsg(t){ $('profileMsg').textContent = t; }
+
+function label(row){
+  return (row || []).map(function(h, i){
+    var v = String(h == null ? '' : h).trim();
+    return v || ('Column ' + (i + 1));
+  });
+}
+function readMaster(){
+  var raw = $('masterText').value;
+  if(!raw.trim()) return { headers: [], rows: [], warn: '' };
+  var rows = trimBlankEdges(parseDelimited(raw, detectDelim(raw)));
+  if(!rows.length) return { headers: [], rows: [], warn: '', raw: [] };
+  var n = headerRowNumber('masterHeaderRow');
+  var warn = '';
+  if(n > rows.length){
+    warn = 'This type only has ' + rows.length + ' row(s) pasted, so row 1 was read as the column names. Check "Column names on row".';
+    n = 1;
+  }
+  var d = dataRowNumber('masterDataRow', n);
+  if(d <= n) warn = 'Data row is above the names row \u2014 check those two boxes.';
+  var headers = label(rows[n - 1]);
+  var body = rows.slice(Math.max(d, n + 1) - 1).filter(function(r){ return !isBlankRow(r); });
+  return { headers: headers, rows: normalizeWidth(body, headers.length), warn: warn,
+           widthWarn: widthNote(body, headers), raw: rows };
+}
+function readIncoming(){
+  var raw = $('incText').value;
+  if(!raw.trim()) return { headers: [], rows: [], warn: '' };
+  var rows = trimBlankEdges(parseDelimited(raw, detectDelim(raw)));
+  if(!rows.length) return { headers: [], rows: [], warn: '', raw: [] };
+  var hasHeader = $('incHasHeader').checked;
+  var headers, body, warn = '';
+  if(hasHeader){
+    var n = headerRowNumber('incHeaderRow');
+    if(n > rows.length){
+      warn = 'This sheet only has ' + rows.length + ' row(s) pasted, so row 1 was read as the column names. Check "Column names on row".';
+      n = 1;
+    }
+    var dr = dataRowNumber('incDataRow', n);
+    headers = label(rows[n - 1]);
+    body = rows.slice(Math.max(dr, n + 1) - 1).filter(function(r){ return !isBlankRow(r); });
+  } else {
+    var w = 0;
+    rows.forEach(function(r){ w = Math.max(w, r.length); });
+    headers = [];
+    for(var i = 0; i < w; i++) headers.push('Column ' + (i + 1));
+    body = rows;
+  }
+  return { headers: headers, rows: normalizeWidth(body, headers.length), warn: warn,
+           widthWarn: widthNote(body, headers), raw: rows };
+}
+function renderMasterChips(){
+  var h = state.masterHeaders;
+  var box = $('masterChips');
+  var note = $('masterNote');
+  if(!h.length){
+    box.innerHTML = '';
+    if(note) note.innerHTML = '';
+    setupOneLine(box, $('masterChipsToggle'), 0);
+    return;
+  }
+  box.innerHTML = h.map(function(x, i){
+    return '<span class="chip">' + (i+1) + '. ' + esc(x) + '</span>';
+  }).join('');
+  if(note) note.innerHTML = state.masterRows.length ? '' :
+    '<div class="note">No rows pasted, so rows already in your master cannot be skipped.</div>';
+  setupOneLine(box, $('masterChipsToggle'), h.length);
+}
+/* A small picture of what was pasted: which row was taken as the column names,
+   which row is the first record, and which rows were ignored. */
+/* A long list of column names inside a note: shown as a tidy aligned grid behind a
+   "Show all" button, so a note with 60 names does not take over the page. */
+function nameListHtml(btnId, listId, items, withLetters){
+  var rows = items.map(function(x){
+    var name = withLetters ? x.name : x;
+    var letter = withLetters ? x.letter : '';
+    return '<div class="nameRow">' + (withLetters ? '<span class="colref">' + esc(letter) + '</span>' : '') +
+      '<span class="nm" title="' + esc(name) + '">' + esc(name) + '</span></div>';
+  }).join('');
+  return '<button type="button" class="link" id="' + btnId + '" aria-expanded="false">Show all ' +
+    items.length + '</button><div class="nameList" id="' + listId + '">' + rows + '</div>';
+}
+function wireCollapse(btnId, listId, count){
+  var btn = $(btnId), list = $(listId);
+  if(!btn || !list || !count) return;
+  var cls = list.classList;
+  btn.textContent = 'Show all ' + count;
+  if(btn.setAttribute) btn.setAttribute('aria-expanded', 'false');
+  btn.onclick = function(){
+    var open;
+    if(cls && cls.add && cls.remove){
+      open = !(cls.contains && cls.contains('open'));
+      if(open) cls.add('open'); else cls.remove('open');
+    } else {
+      open = !list._open;
+      list._open = open;
+      list.style.display = open ? 'grid' : 'none';
+    }
+    btn.textContent = open ? 'Show less' : 'Show all ' + count;
+    if(btn.setAttribute) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+}
+/* Long lists of columns sit on one line and cut off with a fade;
+   "Show all" opens them out for anyone who wants to check the full list. */
+function setupOneLine(chipsEl, btn, count){
+  if(!chipsEl || !btn) return;
+  var cl = chipsEl.classList;
+  if(!cl || !cl.contains || !cl.add || !cl.remove) return;
+  btn.hidden = count <= 6;
+  btn.textContent = cl.contains('expanded') ? 'Show less' : 'Show all ' + count;
+  btn.onclick = function(){
+    var open = !cl.contains('expanded');
+    if(open) cl.add('expanded'); else cl.remove('expanded');
+    btn.textContent = open ? 'Show less' : 'Show all ' + count;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+}
+function renderPasteGuide(elId, rows, nameRow, dataRow){
+  var el = $(elId);
+  if(!el) return;
+  if(!rows || !rows.length){ el.innerHTML = ''; return; }
+  var max = 5;
+  var html = '<div class="guide">';
+  for(var i = 0; i < Math.min(rows.length, max); i++){
+    var n = i + 1, cls, tag;
+    if(n < nameRow){ cls = 'g-ignored'; tag = 'ignored'; }
+    else if(n === nameRow){ cls = 'g-names'; tag = 'column names \u2014 matched on'; }
+    else if(n < dataRow){ cls = 'g-skipped'; tag = 'skipped'; }
+    else { cls = 'g-data'; tag = (n === dataRow ? 'first record' : ''); }
+    var cells = rows[i].slice(0, 8).map(function(v){
+      var t = String(v == null ? '' : v).trim();
+      if(t === '') return '\u2014';
+      return esc(t.length > 24 ? t.slice(0, 24) + '\u2026' : t);
+    }).join(' &middot; ');
+    if(rows[i].length > 8) cells += ' &middot; \u2026';
+    html += '<div class="growseg ' + cls + '"><span class="rn">row ' + n + '</span>' +
+            '<span class="cells">' + cells + '</span>' +
+            (tag ? '<span class="tag">' + tag + '</span>' : '<span></span>') + '</div>';
+  }
+  if(rows.length > max) html += '<div class="gmore">\u2026 and ' + (rows.length - max) + ' more row(s) below</div>';
+  html += '</div>';
+  el.innerHTML = html;
+}
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function pill(score, matched){
+  if(!matched) return '<span class="pill p-gray">dropped</span>';
+  if(score >= 0.94) return '<span class="pill p-good">exact</span>';
+  if(score >= 0.8) return '<span class="pill p-good">' + Math.round(score*100) + '% sure</span>';
+  return '<span class="pill p-warn">' + Math.round(score*100) + '% — check</span>';
+}
+function renderMapping(){
+  var area = $('mapArea');
+  var inc = state.inHeaders, mh = state.masterHeaders;
+  if(!mh.length || !inc.length){
+    area.innerHTML = '<div class="note">Paste your columns in step 1 and the new sheet in step 2.</div>';
+    return;
+  }
+  var layout = state.layout || buildLayout(state.mapping, mh);
+  var mhLen = mh.length;
+
+  var wide = layout.headers.length > 12;
+  var strip = layout.headers.map(function(h, i){
+    var extra = i >= mhLen;
+    return '<span class="chip' + (extra ? ' chip-extra' : '') + '" title="' +
+      (extra ? 'appended from the new sheet' : 'one of your master columns') + '">' +
+      (i+1) + '. ' + esc(h) +
+      (wide ? ' <span class="colref">' + colLetter(i) + '</span>' : '') + '</span>';
+  }).join('');
+
+  var usedCount = {};
+  state.mapping.forEach(function(m){ if(m.match) usedCount[m.match] = (usedCount[m.match] || 0) + 1; });
+
+  var html = '<p class="lbl" style="margin:0 0 6px">Output column order</p>' +
+    '<div class="chipline" style="margin-bottom:12px">' +
+      '<div class="chips one-line sm" id="stripChips">' + strip + '</div>' +
+      '<button type="button" class="link" id="stripToggle" aria-expanded="false" hidden>Show all</button>' +
+    '</div>' +
+    '<div class="scroll"><table><thead><tr>' +
+    '<th style="width:30%">Column in the new sheet</th><th style="width:6%"></th>' +
+    '<th style="width:34%">Goes into</th><th style="width:30%">Where it lands</th>' +
+    '</tr></thead><tbody>';
+
+  state.mapping.forEach(function(m, idx){
+    var t = layout.targets[idx];
+    var opts = '<optgroup label="Your master’s columns">';
+    mh.forEach(function(h){
+      opts += '<option value="' + esc(h) + '"' + (m.match === h ? ' selected' : '') + '>' + esc(h) +
+        (usedCount[h] > 1 && m.match !== h ? '  (already used)' : '') + '</option>';
+    });
+    opts += '</optgroup><optgroup label="Not in your master">' +
+      '<option value="__extra"' + (!m.match && m.extra === true ? ' selected' : '') + '>\u2795 Append as a new column at the back</option>' +
+      '<option value="__drop"' + (!m.match && m.extra !== true ? ' selected' : '') + '>\u2715 Leave this column out</option>' +
+      '</optgroup>';
+
+    var where;
+    if(t == null || t < 0){
+      where = '<span class="pill p-gray">not copied</span>';
+    } else if(t >= mhLen){
+      where = '<span class="pill p-warn">new column ' + (t + 1) + ' \u00b7 appended</span>';
+    } else if(m.score >= 0.94){
+      where = '<span class="pill p-good">column ' + (t + 1) + ' \u00b7 exact</span>';
+    } else if(m.score >= 0.8){
+      where = '<span class="pill p-good">column ' + (t + 1) + ' \u00b7 ' + Math.round(m.score * 100) + '% sure</span>';
+    } else {
+      where = '<span class="pill p-warn">column ' + (t + 1) + ' \u00b7 ' + Math.round(m.score * 100) + '% \u2014 check</span>';
+    }
+
+    html += '<tr><td class="mono">' + esc(m.header) + '</td>' +
+      '<td style="text-align:center;color:#8a94a3">\u2192</td>' +
+      '<td><select data-idx="' + idx + '">' + opts + '</select></td>' +
+      '<td>' + where + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+  setupOneLine($('stripChips'), $('stripToggle'), layout.headers.length);
+
+  Array.prototype.forEach.call(area.querySelectorAll('select'), function(sel){
+    sel.addEventListener('change', function(){
+      var i = parseInt(sel.getAttribute('data-idx'), 10);
+      applyMappingChoice(state.mapping[i], sel.value);
+      var target = sel.value === '__extra' ? '#append' : (sel.value === '__drop' ? '#skip' : sel.value);
+      var msg;
+      if(target === '#append') msg = 'Remembered: "' + state.mapping[i].header + '" \u2192 the back';
+      else if(target === '#skip') msg = 'Remembered: "' + state.mapping[i].header + '" \u2192 left out';
+      else msg = 'Remembered: "' + state.mapping[i].header + '" \u2192 ' + target;
+      learnRule(state.mapping[i].header, target);
+      run(false);
+      toast(msg);
+    });
+  });
+
+  // ---- notes ----
+  var appended = [], dropped = [], clashes = [];
+  state.mapping.forEach(function(m, idx){
+    if(m.match) return;
+    if(m.extra === true) appended.push(m.header);
+    else dropped.push(m.header);
+  });
+  Object.keys(usedCount).forEach(function(h){
+    if(usedCount[h] > 1) clashes.push(h);
+  });
+  var fed = {};
+  state.mapping.forEach(function(m){ if(m.match) fed[m.match] = 1; });
+  var blanks = mh.filter(function(h){ return !fed[h]; });
+
+  var notes = [];
+  if(state.headerRowWarn) notes.push('<div class="note bad">' + esc(state.headerRowWarn) + '</div>');
+  if(state.widthWarn) notes.push('<div class="note">' + esc(state.widthWarn) + '</div>');
+  if(state.mergedDupes && state.mergedDupes.length){
+    var mm = state.mergedDupes.map(function(d){ return '<b>' + esc(d.name) + '</b> (' + d.count + ' columns)'; }).join(', ');
+    notes.push('<div class="note ok">Merged into a single column: ' + mm +
+      '. Each row kept its first non-empty value' +
+      (state.mergedConflicts ? ', though <b>' + state.mergedConflicts + '</b> row(s) had two different values \u2014 the first was used' : '') + '.</div>');
+  }
+  if(state.headerLikeSkipped) notes.push('<div class="note ok">Skipped <b>' + state.headerLikeSkipped +
+    '</b> row(s) that repeated the column names instead of holding data. Untick \u201cSkip rows that repeat the column names\u201d in step 2 to keep them.</div>');
+  if(state.positional) notes.push('<div class="note">No column names in this sheet, so columns were lined up by position. Check them below.</div>');
+  if(dropped.length){
+    notes.push('<div class="note"><span class="note-lead">Left out of the output</span> \u2014 ' +
+      dropped.length + (dropped.length === 1 ? ' column of the new sheet is not copied. ' : ' columns of the new sheet are not copied. ') +
+      (dropped.length <= 3 ? '<b>' + dropped.map(esc).join(', ') + '</b>'
+                           : nameListHtml('leftOutToggle', 'leftOutList', dropped, false)) + '</div>');
+  }
+  if(blanks.length){
+    var blankItems = blanks.map(function(h){ return { name: h, letter: colLetter(mh.indexOf(h)) }; });
+    notes.push('<div class="note"><span class="note-lead">Missing values in the new sheet</span> \u2014 ' +
+      blanks.length + (blanks.length === 1 ? ' column will stay blank. ' : ' columns will stay blank. ') +
+      (blanks.length <= 3 ? '<b>' + blanks.map(esc).join(', ') + '</b>'
+                          : nameListHtml('blankToggle', 'blankList', blankItems, true)) + '</div>');
+  }
+  if(clashes.length) notes.push('<div class="note bad">More than one incoming column is pointed at <b>' + clashes.map(esc).join(', ') + '</b> \u2014 only the last one shows.</div>');
+  var div = document.createElement('div');
+  div.innerHTML = notes.join('');
+  area.appendChild(div);
+  wireCollapse('blankToggle', 'blankList', blanks.length);
+  wireCollapse('leftOutToggle', 'leftOutList', dropped.length);
+}
+function renderPreview(){
+  var mhLen = state.masterHeaders.length;
+  var headers = state.outHeaders.slice(0, state.copyCols);
+  var rows = state.outRows;
+  var area = $('previewArea');
+  if(!headers.length || !rows.length){
+    area.innerHTML = '<div class="note" style="margin:8px">Rows will preview here.</div>';
+    return;
+  }
+  var show = rows.slice(0, 15);
+  var html = '<table><thead><tr><th style="width:46px">#</th>' +
+    headers.map(function(h, i){
+      var wide = headers.length > 12;
+      var sub = [];
+      if(wide) sub.push(colLetter(i));
+      if(i >= mhLen) sub.push('appended');
+      return '<th' + (i >= mhLen ? ' class="th-extra"' : '') + '>' + esc(h) +
+        (sub.length ? '<br><span style="font-weight:400;font-size:11px">' + sub.join(' \u00b7 ') + '</span>' : '') + '</th>';
+    }).join('') + '</tr></thead><tbody>';
+  show.forEach(function(r, i){
+    html += '<tr><td style="color:#8a94a3">' + (i + 1) + '</td>' +
+      r.slice(0, state.copyCols).map(function(v, j){
+        return '<td' + (j >= mhLen ? ' class="td-extra"' : '') + '>' +
+          (v === '' ? '<span style="color:#c2c8d0">\u2014</span>' : esc(v)) + '</td>';
+      }).join('') + '</tr>';
+  });
+  html += '</tbody></table>';
+  area.innerHTML = html;
+}
+function renderOutput(){
+  var mhLen = state.masterHeaders.length;
+  var headers = state.outHeaders.slice(0, state.copyCols);
+  var rows = state.outRows.map(function(r){ return r.slice(0, state.copyCols); });
+  var text = '';
+  if(rows.length){
+    text = toTSV($('outHasHeader').checked ? [headers].concat(rows) : rows) + '\n';
+  }
+  $('output').value = text;
+
+  var appended = state.outHeaders.length - mhLen;
+  var stats = [];
+  if($('outHasHeader').checked) stats.push('<span class="stat"><b>1</b> column-names line + <b>' + rows.length + '</b> rows</span>');
+  else stats.push('<span class="stat"><b>' + rows.length + '</b> rows to paste</span>');
+  stats.push('<span class="stat"><b>' + mhLen + '</b> columns aligned</span>');
+  if(appended && $('keepExtras').checked) stats.push('<span class="stat"><b>' + appended + '</b> at the back</span>');
+  if(state.dropped) stats.push('<span class="stat"><b>' + state.dropped + '</b> skipped</span>');
+  $('outStats').innerHTML = stats.join('');
+
+  var notes = [];
+  if(state.dedupeFallback) notes.push('<div class="note">No <b>' + esc(state.dedupeMode) + '</b> column in this sheet, so duplicates were compared on every column instead.</div>');
+  if(state.dedupeBroken) notes.push('<div class="note bad">De-duplicating on <b>' + esc(state.dedupeMode) + '</b>, but this sheet has no such column \u2014 nothing was compared.</div>');
+  if(state.dedupeAllBlank) notes.push('<div class="note bad">De-duplicating on <b>' + esc(state.dedupeMode) + '</b>, but that column is empty on every row \u2014 nothing was compared.</div>');
+  if(state.dropped) notes.push('<div class="note ok"><b>' + state.dropped + '</b> row(s) already in your master \u2014 skipped.</div>');
+  var gaps = gapReport(state.outRows.map(function(r){ return r.slice(0, state.copyCols); }),
+                       state.outHeaders.slice(0, state.copyCols));
+  if(gaps.length){
+    var shown = gaps.slice(0, 5).map(function(g){
+      return '<b>' + esc(g.header) + '</b> (' + g.col + ', ' + g.blanks + ' of ' + state.outRows.length + ')';
+    }).join(', ');
+    notes.push('<div class="note neutral">Some cells are empty: ' + shown +
+      (gaps.length > 5 ? ', and ' + (gaps.length - 5) + ' more column(s)' : '') +
+      '. Check they are meant to be blank.</div>');
+  }
+  if(state.bigSheet) notes.push('<div class="note">Large sheet: <b>' + state.outRows.length + '</b> rows ready. The preview shows the first 15; Copy takes all of them.</div>');
+  if($('outHasHeader').checked) notes.push('<div class="note">Your copy starts with a line of column names. Adding to an existing master? That line will sit there as a data row \u2014 untick it, or delete that one row after pasting. It belongs on a brand-new sheet.</div>');
+  $('outNotes').innerHTML = notes.join('');
+}
+function refreshDedupeOptions(){
+  var sel = $('dedupe');
+  var prev = sel.value, mh = state.masterHeaders;
+  var html = '<option value="off">Keep everything</option>' +
+             '<option value="all">Skip rows already there (all columns)</option>';
+  mh.forEach(function(h){
+    html += '<option value="' + esc(h) + '">Skip rows whose \u201c' + esc(h) + '\u201d is already there</option>';
+  });
+  sel.innerHTML = html;
+  /* A value we picked ourselves may be re-guessed once the master is known;
+     a value the user picked is never overridden. */
+  var auto = sel.getAttribute('data-auto') !== '0';
+  var valid = prev && (prev === 'off' || prev === 'all' || mh.indexOf(prev) >= 0);
+  if(valid && !auto){ sel.value = prev; }
+  else {
+    sel.value = mh.length ? (guessKey(mh) || 'all') : 'off';
+    sel.setAttribute('data-auto', '1');
+  }
+}
+function guessKey(mh){
+  var inv = mh.filter(function(h){ return /invoice/.test(normalize(h)); })[0];
+  if(inv) return inv;
+  var best = null;
+  mh.forEach(function(h){
+    var n = normalize(h);
+    if(!best && /(^| )(no|number|num|id|code|ref|reference)($| )/.test(n)) best = h;
+  });
+  return best;
+}
+/* Moving the names row down usually means the data starts on the next row.
+   Once someone sets the data row by hand, it is never touched again. */
+function syncDataRows(){
+  [['masterHeaderRow','masterDataRow'], ['incHeaderRow','incDataRow']].forEach(function(pair){
+    var head = parseInt($(pair[0]).value, 10);
+    if(!isFinite(head) || head < 1) head = 1;
+    if($(pair[1]).getAttribute('data-auto') === '0') return;
+    var d = parseInt($(pair[1]).value, 10);
+    if(!isFinite(d) || d <= head) $(pair[1]).value = String(head + 1);
+  });
+}
+/* Anything unexpected is caught and reported politely instead of dying silently. */
+function run(rematch){
+  try{
+    runInner(rematch);
+  }catch(err){
+    if(typeof console !== 'undefined' && console.error) console.error(err);
+    toast('Something went wrong \u2014 check your paste and try again.', 'warn');
+    try{
+      $('outNotes').innerHTML = '<div class="note bad">Something went wrong while aligning: ' +
+        esc(err && err.message ? err.message : String(err)) + '</div>';
+    }catch(e2){}
+  }
+}
+function runInner(rematch){
+  syncDataRows();
+  var m = readMaster();
+  state.masterHeaders = m.headers;
+  state.masterRows = m.rows;
+  renderMasterChips();
+  renderPasteGuide('masterGuide', m.raw, headerRowNumber('masterHeaderRow'), dataRowNumber('masterDataRow', headerRowNumber('masterHeaderRow')));
+  refreshDedupeOptions();
+
+  var inc = readIncoming();
+  var mergeInfo = mergeDuplicateColumns(inc.headers, inc.rows);
+  inc.headers = mergeInfo.headers;
+  inc.rows = mergeInfo.rows;
+  state.mergedDupes = mergeInfo.merged;
+  state.mergedConflicts = mergeInfo.conflicts;
+  state.inHeaders = inc.headers;
+  state.inRows = inc.rows;
+  state.headerRowWarn = (m.warn || '') + (inc.warn || '');
+  state.widthWarn = (m.widthWarn || '') + (inc.widthWarn || '');
+  state.bigSheet = inc.rows.length > 20000;
+
+  renderPasteGuide('incGuide', inc.raw, headerRowNumber('incHeaderRow'), dataRowNumber('incDataRow', headerRowNumber('incHeaderRow')));
+
+  var typeNow = nameOfCurrent();
+  $('incStats').innerHTML = (inc.headers.length
+    ? '<span class="stat"><b>' + inc.rows.length + '</b> rows in the new sheet</span><span class="stat"><b>' + inc.headers.length + '</b> columns</span>'
+    : '') + (mergeInfo.merged.length
+    ? '<span class="stat"><b>' + mergeInfo.merged.length + '</b> duplicate column name(s) merged</span>'
+    : '') + (typeNow ? '<span class="stat">Aligning to your type: <b>' + esc(typeNow) + '</b></span>' : '');
+
+  if(!state.masterHeaders.length || !state.inHeaders.length){
+    state.mapping = state.inHeaders.map(function(h){ return { header:h, match:null, score:0, extra:false }; });
+    state.layout = buildLayout(state.mapping, state.masterHeaders);
+    state.outHeaders = state.layout.headers;
+    state.copyCols = state.outHeaders.length;
+    state.outRows = []; state.dropped = 0;
+    renderMapping(); renderPreview(); renderOutput();
+    autosaveSetup();          // remember columns even before a sheet is pasted
+    return;
+  }
+
+  if(rematch || !state.mapping.length || state.mapping.length !== state.inHeaders.length ||
+     state.mapping.some(function(x, i){ return x.header !== state.inHeaders[i]; })){
+    state.positional = !$('incHasHeader').checked;
+    state.mapping = buildMapping(state.inHeaders, state.masterHeaders, parseAliasRules($('rulesText').value), 0.6, state.positional);
+    var policy = $('extrasMode').value === 'append';
+    state.mapping.forEach(function(x){ x.extra = x.match ? false : policy; });
+  } else {
+    // keep manual edits, but re-validate names that no longer exist
+    state.mapping.forEach(function(x){
+      if(x.match && state.masterHeaders.indexOf(x.match) < 0){ x.match = null; x.extra = true; }
+    });
+  }
+
+  applyDecisions(state.mapping);
+  var layout = buildLayout(state.mapping, state.masterHeaders);
+  state.layout = layout;
+  state.outHeaders = layout.headers;
+  state.copyCols = $('keepExtras').checked ? layout.headers.length : state.masterHeaders.length;
+
+  /* Throw away rows that are just another copy of the column names. */
+  var known = knownNameSet([state.masterHeaders, state.inHeaders,
+                            Object.keys(decisionIndex($('rulesText').value))]);
+  var skipLike = $('skipHeaderLike').checked;
+  var mFiltered = dropHeaderLikeRows(state.masterRows, known, skipLike);
+  state.masterRows = mFiltered.rows;
+  var iFiltered = dropHeaderLikeRows(state.inRows, known, skipLike);
+  state.inRows = iFiltered.rows;
+  state.headerLikeSkipped = iFiltered.skipped;
+  state.headerLikeSamples = iFiltered.samples;
+
+  var aligned = alignRows(state.inRows, layout.targets, layout.headers.length, { trim: $('trim').value === 'on' });
+  var existing = masterToOutput(state.masterRows, state.masterHeaders, layout.headers);
+
+  /* De-duplicating needs the chosen column to actually arrive from the new sheet.
+     If it doesn't, say so instead of quietly comparing nothing. */
+  var mode = $('dedupe').value;
+  state.dedupeMode = mode;
+  state.dedupeFallback = false;
+  state.dedupeBroken = false;
+  state.dedupeAllBlank = false;
+  if(mode !== 'off' && mode !== 'all'){
+    var j = layout.headers.indexOf(mode);
+    var fed = state.mapping.some(function(m){ return m.match === mode; });
+    var nothingToCompare = aligned.length && j >= 0 && aligned.every(function(r){ return normalize(r[j]) === ''; });
+    if(!fed){
+      if($('dedupe').getAttribute('data-auto') !== '0'){
+        mode = 'all';
+        $('dedupe').value = 'all';
+        state.dedupeFallback = true;
+      } else {
+        state.dedupeBroken = true;
+      }
+    } else if(nothingToCompare){
+      state.dedupeAllBlank = true;
+    }
+  }
+
+  var res = dropDuplicates(aligned, mode, layout.headers, existing);
+  state.outRows = res.rows;
+  state.dropped = res.dropped;
+
+  renderMapping(); renderPreview(); renderOutput();
+  autosaveSetup();
+}
+
+/* ---------------- events ---------------- */
+var t = null;
+function debounceRun(rematch){
+  clearTimeout(t);
+  t = setTimeout(function(){ run(rematch); }, 180);
+}
+['masterText','rulesText','incText','trim','dedupe','extrasMode','outHasHeader','incHasHeader','keepExtras','skipHeaderLike','masterHeaderRow','incHeaderRow'].forEach(function(id){
+  var rematch = (id === 'rulesText' || id === 'masterText' || id === 'extrasMode' || id === 'incHasHeader' ||
+                 id === 'masterHeaderRow' || id === 'incHeaderRow' || id === 'masterDataRow' || id === 'incDataRow');
+  var act = function(){
+    if(id === 'dedupe') $(id).setAttribute('data-auto', '0');        // user's choice wins from now on
+    if(id === 'masterDataRow' || id === 'incDataRow') $(id).setAttribute('data-auto', '0');
+    debounceRun(rematch);
+  };
+  $(id).addEventListener('input', act);
+  $(id).addEventListener('change', act);
+});
+$('btnRun').addEventListener('click', function(){ run(true); });
+$('btnDemo').addEventListener('click', function(){
+  $('masterText').value = toTSV(DEMO_MASTER);
+  $('incText').value = toTSV(DEMO_NEW);
+  $('incHasHeader').checked = true;
+  if(!ruleLines().length){
+    setRules('client = customer name&#10;total = amount&#10;invoice # = invoice no&#10;rep = sales rep&#10;area = region'.replace(/&#10;/g, '\n'));
+  }
+  run(true);
+});
+$('btnSaveProfile').addEventListener('click', function(){
+  var name = $('profileName').value.trim();
+  if(!name){ toast('Give the setup a name first, e.g. "Sales master - Ada".', 'warn'); $('profileName').focus(); return; }
+  saveSetupAs(name);
+});
+$('profileSel').addEventListener('change', function(){
+  if(!this.value) return;
+  if(loadSetupByName(this.value)) run(true);
+});
+$('btnDeleteProfile').addEventListener('click', function(){
+  var btn = $('btnDeleteProfile');
+  var d = readSetups();
+  var name = d.current || $('profileName').value.trim();
+  if(!name || !d.items[name]){ toast('There is no saved setup to delete.', 'warn'); return; }
+  if(btn.getAttribute('data-armed') !== '1'){
+    btn.setAttribute('data-armed', '1');
+    btn.classList.add('armed');
+    btn.textContent = 'Press again to delete';
+    setTimeout(function(){ btn.removeAttribute('data-armed'); btn.classList.remove('armed'); btn.textContent = 'Delete'; }, 4000);
+    return;
+  }
+  btn.removeAttribute('data-armed'); btn.classList.remove('armed'); btn.textContent = 'Delete';
+  deleteSetupByName(name);
+  toast('Deleted "' + name + '".');
+});
+$('btnExportProfile').addEventListener('click', function(){
+  var d = readSetups();
+  var name = d.current || $('profileName').value.trim() || 'sheet-aligner-setup';
+  var text = setupExportText(d.current);
+  var filename = name.replace(/[^a-z0-9 _-]/gi, '') .trim().replace(/\s+/g, '-').toLowerCase() + '.json';
+  try{
+    var blob = new Blob([text], { type:'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast('Saved ' + filename);
+  }catch(e){
+    $('importCode').value = text; $('importCode').focus(); $('importCode').select();
+    toast('Download blocked here \u2014 the code is in the box below, send that instead.', 'warn');
+  }
+});
+$('btnCopyProfile').addEventListener('click', function(){
+  var d = readSetups();
+  var text = setupExportText(d.current);
+  var done = function(){ toast('Share code copied \u2014 send it to a colleague to import.'); };
+  var fallback = function(){
+    $('importCode').value = text; $('importCode').focus(); $('importCode').select();
+    toast('Press Ctrl/Cmd+C now, then send that text.', 'warn');
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+  else fallback();
+});
+$('btnImportCode').addEventListener('click', function(){
+  var r = setupImportText($('importCode').value);
+  if(!r.ok){ toast(r.error, 'warn'); return; }
+  $('importCode').value = '';
+  run(true);
+});
+$('importFile').addEventListener('change', function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  if(typeof FileReader === 'undefined'){ toast('Could not read that file here \u2014 paste the code instead.', 'warn'); return; }
+  var fr = new FileReader();
+  fr.onload = function(){
+    var r = setupImportText(fr.result);
+    if(!r.ok){ toast(r.error, 'warn'); return; }
+    $('importFile').value = '';
+    run(true);
+  };
+  fr.onerror = function(){ toast('Could not read that file.', 'warn'); };
+  fr.readAsText(f);
+});
+$('btnClearRules').addEventListener('click', function(){
+  setRules('');
+  run(true);
+  toast('Remembered rules cleared for this setup.');
+});
+$('btnCopy').addEventListener('click', function(){
+  var box = $('output');
+  if(!box.value){ flash('Nothing to copy yet.'); return; }
+  box.focus(); box.select();
+  var done = function(){ flash('Copied.'); };
+  var fail = function(){ flash('Press Ctrl/Cmd+C now.'); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(box.value).then(done, fail);
+  } else {
+    try { document.execCommand('copy') ? done() : fail(); } catch(e){ fail(); }
+  }
+});
+$('btnCsv').addEventListener('click', function(){
+  if(!state.outRows.length){ flash('Nothing to download yet.'); return; }
+  var rows = state.outRows.map(function(r){ return r.slice(0, state.copyCols); });
+  if($('outHasHeader').checked) rows = [state.outHeaders.slice(0, state.copyCols)].concat(rows);
+  try{
+    var blob = new Blob([toCSV(rows)], { type:'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'aligned-rows.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    flash('Saved aligned-rows.csv');
+  } catch(e){ flash('Download blocked here — open this file in your browser instead.'); }
+});
+function flash(msg){
+  var n = document.createElement('div');
+  n.className = 'note';
+  n.textContent = msg;
+  $('outNotes').appendChild(n);
+  setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4000);
+}
+/* ---------------- startup ---------------- */
+/* Ctrl/Cmd+Enter re-aligns without reaching for the button. */
+if(typeof document !== 'undefined' && document.addEventListener){
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.keyCode === 13)){
+      e.preventDefault();
+      run(true);
+      toast('Re-aligned');
+    }
+  });
+}
+if(typeof window !== 'undefined' && window.addEventListener){
+  window.addEventListener('error', function(ev){
+    if(typeof console !== 'undefined' && console.error) console.error(ev && ev.error ? ev.error : ev);
+  });
+}
+(function start(){
+  if($('appVersion')) $('appVersion').textContent = 'v' + APP_VERSION;
+  refreshSetupSelect();
+  var d = readSetups();
+  if(d.current && d.items[d.current]){
+    applySetup(d.items[d.current]);
+    setProfileMsg('Using type "' + d.current + '".');
+  } else if(!storageWorks){
+    setProfileMsg('This browser blocks saving \u2014 use Export to keep a copy for next time.');
+  }
+  run(true);
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e4105c488f11dc',t:'MTc4OTk0MTIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
