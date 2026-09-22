@@ -20,19 +20,38 @@
   body{margin:0;background:var(--bg);color:var(--ink);
     font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased}
-  .wrap{max-width:1060px;margin:0 auto;padding:26px 18px 90px}
+  .wrap{max-width:1060px;margin:0 auto;padding:26px 18px 90px;position:relative;z-index:1}
 
-  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.2px}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:-.2px;color:#12294a}
+  @supports ((-webkit-background-clip:text) or (background-clip:text)){
+    h1{background:linear-gradient(92deg,#12294a,#1f6feb 52%,#7a5af8);
+      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  }
   h2{font-size:16px;margin:0 0 4px}
   .sub{color:var(--muted);margin:0 0 20px;font-size:14px}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
-    padding:18px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+    padding:18px;margin-bottom:16px;
+    box-shadow:0 1px 2px rgba(16,24,40,.04),0 20px 40px -30px rgba(20,60,140,.45)}
   .step{display:flex;gap:10px;align-items:center;margin-bottom:12px}
-  .num{flex:0 0 26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+  .num{flex:0 0 26px;height:26px;border-radius:50%;color:#fff;
+    background:linear-gradient(145deg,#4b93f8,#1a5fd0);
     font-size:13px;font-weight:600;display:grid;place-items:center}
-  .num.star{background:#7a5af8}
+  .num.star{background:linear-gradient(145deg,#9a86fb,#6743f0)}
   .hint{color:var(--muted);font-size:13px;margin:6px 0 10px}
+
+  /* foldable cards: a card can shrink to its title bar */
+  .card.collapsed > *:not(.step){display:none}
+  .card.collapsed > .step{margin-bottom:0}
+  .card-ctl{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
+  .card-sum{color:var(--muted);font-size:12.5px;max-width:40ch;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .card:not(.collapsed) .card-sum{display:none}
+  .pasteBox{margin-top:10px}
+  .link{background:none;border:0;padding:0;color:var(--accent-d);font-weight:600;font-size:13px;
+    cursor:pointer;border-radius:6px;white-space:nowrap}
+  .link:hover{text-decoration:underline}
+  .link:focus-visible{outline:2px solid #bcd4fb;outline-offset:2px}
 
   textarea,input,select,button{font:inherit}
   textarea{width:100%;min-height:86px;padding:10px 12px;border:1px solid var(--line);
@@ -153,9 +172,48 @@
   .g-data .cells{color:#5c6775}
   .g-data .tag{background:var(--good-bg);color:var(--good)}
   .gmore{padding:5px 10px;font-size:12px;color:var(--muted);background:#fafbfc}
+
+  /* ---------- animated background (decoration only) ---------- */
+  #bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+    background:linear-gradient(176deg,#f9fbff 0%,#eef3fb 48%,#e7eefa 100%)}
+  #bg .orb{position:absolute;border-radius:50%;opacity:.55;filter:blur(42px);
+    transform:translate3d(0,0,0);will-change:transform}
+  #bg .o1{width:44vmax;height:44vmax;left:-12vmax;top:-14vmax;
+    background:radial-gradient(circle at 40% 40%,rgba(116,166,255,.62),rgba(116,166,255,0) 70%);
+    animation:orbA 24s ease-in-out infinite}
+  #bg .o2{width:38vmax;height:38vmax;right:-10vmax;top:6vmax;
+    background:radial-gradient(circle at 50% 50%,rgba(156,120,255,.46),rgba(156,120,255,0) 70%);
+    animation:orbB 30s ease-in-out infinite}
+  #bg .o3{width:42vmax;height:42vmax;left:16vmax;bottom:-18vmax;
+    background:radial-gradient(circle at 50% 50%,rgba(56,205,166,.40),rgba(56,205,166,0) 72%);
+    animation:orbC 36s ease-in-out infinite}
+  #bg .grid{position:absolute;inset:-100px;opacity:.55;
+    background-image:
+      linear-gradient(to right,rgba(31,111,235,.075) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(31,111,235,.075) 1px,transparent 1px);
+    background-size:38px 38px;animation:pan 34s linear infinite}
+  #bg canvas{position:absolute;inset:0;width:100%;height:100%}
+  @keyframes orbA{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(14vmax,10vmax,0) scale(1.16)}}
+  @keyframes orbB{0%,100%{transform:translate3d(0,0,0) scale(1.06)}50%{transform:translate3d(-15vmax,11vmax,0) scale(.96)}}
+  @keyframes orbC{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(12vmax,-13vmax,0) scale(1.2)}}
+  @keyframes pan{from{transform:translate3d(0,0,0)}to{transform:translate3d(-38px,-38px,0)}}
+  #bg.calm .orb{animation-duration:78s;opacity:.4}
+  #bg.calm .grid{animation-duration:120s;opacity:.42}
+  #bg.off .orb,#bg.off .grid{animation:none}
+  .bg-ctl{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px;
+    font-size:12.5px;color:var(--muted)}
+  .bg-ctl .btn{padding:4px 11px;font-size:12.5px}
+  @media (prefers-reduced-motion: reduce){
+    #bg .orb,#bg .grid{animation:none !important}
+  }
 </style>
 </head>
 <body>
+<div id="bg" aria-hidden="true">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+  <span class="grid"></span>
+  <canvas id="bgCells"></canvas>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <noscript>
   <div class="wrap" style="padding-bottom:0">
@@ -169,8 +227,10 @@
   <p class="sub">Paste your main sheet's columns once, save that as a type, then paste any new sheet &mdash; the columns are re-ordered to match.</p>
 
   <!-- TYPES -->
-  <section class="card">
-    <div class="step"><div class="num star">&#9733;</div><h2>Save Your Types</h2></div>
+  <section class="card" id="typesCard">
+    <div class="step"><div class="num star">&#9733;</div><h2>Save Your Types</h2>
+      <span class="card-ctl"><span class="card-sum" id="typesSum"></span><button type="button"
+        class="link card-toggle" id="typesToggle" aria-expanded="true">Hide</button></span></div>
     <p class="hint">One type per tab &mdash; Type 1&ndash;9 and the Validation Call sheet. Save each once, then pick it before pasting a new sheet.</p>
     <div class="row">
       <div class="field" style="flex:1 1 230px">
@@ -190,26 +250,20 @@
       <button type="button" class="btn sm" id="btnCopyProfile">Copy share code</button>
       <label class="btn sm" for="importFile" style="display:inline-block;margin:0">Import a type file<input type="file" id="importFile" accept=".json,application/json" style="display:none" /></label>
     </div>
-    <details>
-      <summary>Import a type someone sent me</summary>
-      <p class="hint" style="margin-top:8px">Paste the code a colleague sent you and import it.</p>
-      <textarea id="importCode" placeholder="Setup code&hellip;"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button type="button" class="link" id="btnPasteToggle" aria-expanded="false">Paste a share code instead</button>
+    </div>
+    <div class="pasteBox" id="pasteBox" hidden>
+      <textarea id="importCode" placeholder="Setup code&hellip;" style="min-height:70px"></textarea>
       <div class="row" style="margin-top:8px"><button type="button" class="btn sm" id="btnImportCode">Import this code</button></div>
-    </details>
-    <details>
-      <summary>Rolling it out to the office</summary>
-      <ul>
-        <li><b>Send the file around.</b> One HTML file &mdash; no install, no account, no internet.</li>
-        <li><b>Each person saves their own types</b> once; they load automatically after that.</li>
-        <li><b>Share a type</b> with Copy share code, or send the exported file.</li>
-        <li><b>Types never hold your data</b> &mdash; column names and rules only.</li>
-      </ul>
-    </details>
+    </div>
   </section>
 
   <!-- STEP 1 -->
-  <section class="card">
-    <div class="step"><div class="num">1</div><h2>Your master sheet</h2></div>
+  <section class="card" id="masterCard">
+    <div class="step"><div class="num">1</div><h2>Your master sheet</h2>
+      <span class="card-ctl"><button type="button"
+        class="link card-toggle" id="masterToggle" aria-expanded="true">Hide</button></span></div>
     <p class="hint">Paste this type's columns, or the whole tab.</p>
     <textarea id="masterText" placeholder="Customer ID	state	created_at	updated_at	surveyor_name"></textarea>
     <div class="row" style="margin-top:10px">
@@ -232,8 +286,10 @@
   </section>
 
   <!-- STEP 2 -->
-  <section class="card">
-    <div class="step"><div class="num">2</div><h2>The new sheet coming in</h2></div>
+  <section class="card" id="incCard">
+    <div class="step"><div class="num">2</div><h2>The new sheet coming in</h2>
+      <span class="card-ctl"><button type="button"
+        class="link card-toggle" id="incToggle" aria-expanded="true">Hide</button></span></div>
     <p class="hint">Copy the new sheet or tab and paste it here.</p>
     <textarea id="incText" placeholder="Inv Date	Client	Invoice Number	Qty	Total"></textarea>
     <div class="row" style="margin-top:10px">
@@ -281,7 +337,7 @@
   </section>
 
   <!-- STEP 3 -->
-  <section class="card">
+  <section class="card" id="matchCard">
     <div class="step"><div class="num">3</div><h2>Column matching</h2></div>
     <p class="hint">Done automatically &mdash; change anything it got wrong. Your columns always come first; anything new is added at the back.</p>
     <div id="mapArea"></div>
@@ -294,7 +350,7 @@
   </section>
 
   <!-- STEP 4 -->
-  <section class="card">
+  <section class="card" id="resultCard">
     <div class="step"><div class="num">4</div><h2>Result &mdash; copy into your master</h2></div>
     <p class="hint">Paste at the first empty row of column A.</p>
     <div id="outNotes"></div>
@@ -333,6 +389,11 @@
       <span>Developed by <b>Gode-Technology</b><span class="c">&nbsp;&copy;&nbsp;</span>2026</span>
     </a>
     <p class="foot-note">Sheet Aligner <span id="appVersion">&nbsp;</span> &middot; runs on your device, nothing is uploaded anywhere</p>
+    <div class="bg-ctl">
+      <span>Background motion</span>
+      <button id="motionBtn" class="btn sm" type="button"
+              title="Switch the background animation: Full, Calm or Off">Full</button>
+    </div>
   </footer>
 </div>
 
@@ -754,7 +815,7 @@ var DEMO_NEW = [
 
 /* ---------------- DOM ---------------- */
 var $ = function(id){ return document.getElementById(id); };
-var APP_VERSION = '1.3';
+var APP_VERSION = '1.6';
 var state = { masterHeaders: [], masterRows: [], inHeaders: [], inRows: [], mapping: [], layout: null, outHeaders: [], copyCols: 0, outRows: [], dropped: 0, positional: false, headerRowWarn: '', widthWarn: '', bigSheet: false, headerLikeSkipped: 0, headerLikeSamples: [], mergedDupes: [], mergedConflicts: 0, dedupeMode: 'off', dedupeFallback: false, dedupeBroken: false, dedupeAllBlank: false };
 
 /* ---------------- saved setups (profiles) ----------------
@@ -954,6 +1015,7 @@ function refreshSetupSelect(){
   sel.innerHTML = html;
   sel.value = (d.current && names.indexOf(d.current) >= 0) ? d.current : '';
   $('profileName').value = d.current || $('profileName').value;
+  refreshCardSummary();
 }
 
 /* ---------------- remembering corrections ---------------- */
@@ -1009,7 +1071,7 @@ function toast(msg, kind){
     setTimeout(function(){ el.style.display = 'none'; }, 400);
   }, 3200);
 }
-function setProfileMsg(t){ $('profileMsg').textContent = t; }
+function setProfileMsg(t){ $('profileMsg').textContent = t; refreshCardSummary(); }
 
 function label(row){
   return (row || []).map(function(h, i){
@@ -1653,6 +1715,366 @@ function flash(msg){
   $('outNotes').appendChild(n);
   setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); }, 4000);
 }
+/* ---------------- the paste-a-code box ----------------
+   Colleagues often send a type as WhatsApp text. That path stays, behind one
+   small link, so the card itself stays short. */
+function togglePasteBox(show){
+  try{
+    if(typeof document !== 'undefined' && document.getElementById){
+      var box = document.getElementById('pasteBox');
+      var btn = document.getElementById('btnPasteToggle');
+      var closed = !!(box && box.hidden !== false);
+      var open = (show === undefined) ? closed : !!show;
+      if(box) box.hidden = !open;
+      if(btn){
+        btn.textContent = open ? 'Hide the paste box' : 'Paste a share code instead';
+        if(btn.setAttribute) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      if(open){
+        var t = document.getElementById('importCode');
+        if(t && t.focus) t.focus();
+      }
+      return open;
+    }
+  }catch(e){}
+  return false;
+}
+function initPasteBox(){
+  try{
+    var btn = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('btnPasteToggle') : null;
+    if(btn && btn.addEventListener) btn.addEventListener('click', function(){ togglePasteBox(); });
+    togglePasteBox(false);
+  }catch(e){}
+}
+
+/* ---------------- animated background ----------------
+   Decoration only: three drifting colour orbs, a slow grid, and a canvas of
+   little cells that drift apart then snap into aligned columns. Levels: full,
+   calm, off. Any failure here is swallowed so the tool never breaks. */
+var MOTION_KEY = 'sheetAlign.motion.v1';
+var MOTION_LEVELS = ['full','calm','off'];
+var MOTION_LABEL = { full:'Full', calm:'Calm', off:'Off' };
+var BG_TONES = ['31,111,235','122,90,248','11,155,107','217,119,6'];
+var motionLevel = 'full';
+var bgState = { cv:null, ctx:null, w:0, h:0, dpr:1, cells:[], t0:0, raf:0, on:false };
+
+function bgPrefersReduced(){
+  try{
+    return !!(typeof window !== 'undefined' && window && window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }catch(e){ return false; }
+}
+function bgEase(x){ return x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2; }
+
+/* 0 = drifting apart, 1 = snapped into tidy columns, then back. Loops. */
+function bgPhase(t, loop){
+  loop = loop || 11;
+  var p = (((t % loop) + loop) % loop) / loop;
+  if(p < 0.40) return 0;
+  if(p < 0.52) return bgEase((p - 0.40)/0.12);
+  if(p < 0.72) return 1;
+  if(p < 0.88) return 1 - bgEase((p - 0.72)/0.16);
+  return 0;
+}
+
+/* The tidy lattice the cells settle into — one point per cell. */
+function bgLattice(w, h){
+  w = w || 1200; h = h || 800;
+  var cols = Math.max(6, Math.min(16, Math.round(w/110)));
+  var rows = Math.max(5, Math.min(11, Math.round(h/110)));
+  var padX = w*0.10, padY = h*0.12, spanX = w - padX*2, spanY = h - padY*2;
+  var out = [];
+  for(var r = 0; r < rows; r++){
+    for(var c = 0; c < cols; c++){
+      out.push({
+        ax: padX + spanX * (cols > 1 ? c/(cols-1) : 0.5),
+        ay: padY + spanY * (rows > 1 ? r/(rows-1) : 0.5),
+        p1: ((c*7 + r*13) % 17)/17 * 6.2832,
+        p2: ((c*11 + r*5) % 23)/23 * 6.2832,
+        sp: 0.16 + ((c*3 + r*7) % 9)/9 * 0.20,
+        k: (c*5 + r*11) % 4
+      });
+    }
+  }
+  return out;
+}
+
+function bgRoundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  if(ctx.roundRect){ ctx.roundRect(x, y, w, h, r); return; }
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function bgFrame(t, animate){
+  var s = bgState;
+  if(!s.ctx) return;
+  var calm = motionLevel === 'calm';
+  var a = animate ? bgPhase(t, calm ? 20 : 11) : 1;
+  var dim = calm ? 0.62 : 1;
+  var ctx = s.ctx;
+  ctx.clearRect(0, 0, s.w, s.h);
+
+  /* When they line up, the columns they form fade in behind them. */
+  if(a > 0.05){
+    var seen = {}, j, k;
+    ctx.strokeStyle = 'rgba(31,111,235,1)';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.14 * a * dim;
+    for(j = 0; j < s.cells.length; j++){
+      k = Math.round(s.cells[j].ax);
+      if(seen[k]) continue;
+      seen[k] = 1;
+      ctx.beginPath();
+      ctx.moveTo(s.cells[j].ax, s.h*0.07);
+      ctx.lineTo(s.cells[j].ax, s.h*0.93);
+      ctx.stroke();
+    }
+  }
+
+  for(var i = 0; i < s.cells.length; i++){
+    var c = s.cells[i];
+    if(calm && (i % 2)) continue;
+    var dx = Math.sin(t*c.sp + c.p1) * 72, dy = Math.cos(t*c.sp*0.83 + c.p2) * 56;
+    var x = c.ax + dx*(1 - a), y = c.ay + dy*(1 - a);
+    var ang = Math.sin(t*c.sp*0.7 + c.p1) * 0.38 * (1 - a);
+    var cw = 28 - 6*a, ch = 18 - 4*a;
+    ctx.globalAlpha = (0.22 + 0.10*Math.sin(t*0.6 + i*0.7)) * (0.60 + 0.40*a) * dim;
+    ctx.fillStyle = 'rgba(' + BG_TONES[c.k] + ',1)';
+    if(ctx.save) ctx.save();
+    if(ctx.translate) ctx.translate(x, y);
+    if(ctx.rotate) ctx.rotate(ang);
+    bgRoundRect(ctx, -cw/2, -ch/2, cw, ch, 3);
+    ctx.fill();
+    if(ctx.restore) ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function bgTick(now){
+  var s = bgState;
+  if(!s.on) return;
+  if(!s.t0) s.t0 = now;
+  bgFrame((now - s.t0)/1000, true);
+  if(s.on && typeof requestAnimationFrame === 'function') s.raf = requestAnimationFrame(bgTick);
+}
+function bgResize(){
+  var s = bgState;
+  if(!s.cv) return;
+  var vw = 1200, vh = 800, dpr = 1;
+  try{
+    if(typeof window !== 'undefined' && window){
+      vw = window.innerWidth || vw; vh = window.innerHeight || vh;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+    }
+  }catch(e){}
+  var w = s.cv.clientWidth || vw, h = s.cv.clientHeight || vh;
+  s.dpr = dpr; s.w = w; s.h = h;
+  s.cv.width = Math.round(w*dpr); s.cv.height = Math.round(h*dpr);
+  s.cells = bgLattice(w, h);
+  if(s.ctx && s.ctx.setTransform) s.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+function bgStart(){
+  var s = bgState;
+  if(!s.ctx || s.on) return;
+  s.t0 = 0;
+  bgFrame(0, true);                      /* paint at once: no blank first frame */
+  if(typeof requestAnimationFrame !== 'function') return;
+  s.on = true;
+  s.raf = requestAnimationFrame(bgTick);
+}
+function bgStop(){
+  var s = bgState;
+  s.on = false;
+  if(s.raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(s.raf);
+  s.raf = 0;
+}
+function bgReadLevel(){
+  var v = null;
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage) v = window.localStorage.getItem(MOTION_KEY);
+  }catch(e){}
+  if(MOTION_LEVELS.indexOf(v) >= 0) return v;
+  return bgPrefersReduced() ? 'off' : 'full';
+}
+function bgApplyLevel(level, save){
+  motionLevel = MOTION_LEVELS.indexOf(level) >= 0 ? level : 'full';
+  try{
+    if(typeof document !== 'undefined' && document.getElementById){
+      var el = document.getElementById('bg');
+      if(el) el.className = motionLevel === 'full' ? '' : motionLevel;
+      var btn = document.getElementById('motionBtn');
+      if(btn) btn.textContent = MOTION_LABEL[motionLevel];
+    }
+  }catch(e){}
+  if(save !== false){
+    try{
+      if(typeof window !== 'undefined' && window && window.localStorage) window.localStorage.setItem(MOTION_KEY, motionLevel);
+    }catch(e){}
+  }
+  if(motionLevel === 'off'){ bgStop(); bgFrame(0, false); }
+  else bgStart();
+}
+/* Small read-only view of the background, handy for tests and debugging. */
+function motionState(){
+  return { level: motionLevel, running: bgState.on, hasCanvas: !!bgState.ctx,
+    cells: bgState.cells.length, w: bgState.w, h: bgState.h };
+}
+function initBackground(){
+  try{
+    var cv = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('bgCells') : null;
+    if(!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    if(!ctx) return;
+    bgState.cv = cv; bgState.ctx = ctx;
+    bgResize();
+    var btn = document.getElementById('motionBtn');
+    if(btn && btn.addEventListener) btn.addEventListener('click', function(){
+      var i = MOTION_LEVELS.indexOf(motionLevel);
+      bgApplyLevel(MOTION_LEVELS[(i + 1) % MOTION_LEVELS.length]);
+      toast('Background motion: ' + MOTION_LABEL[motionLevel]);
+    });
+    bgApplyLevel(bgReadLevel(), false);
+    if(typeof window !== 'undefined' && window && window.addEventListener){
+      window.addEventListener('resize', function(){
+        bgResize();
+        if(motionLevel === 'off') bgFrame(0, false);
+      });
+      if(document.addEventListener) document.addEventListener('visibilitychange', function(){
+        if(document.hidden) bgStop();
+        else if(motionLevel !== 'off') bgStart();
+      });
+    }
+  }catch(e){ /* decoration must never break the tool */ }
+}
+
+/* ---------------- folding the cards ----------------
+   Every card can fold down to its title bar, so the page is only as long as the
+   work needs. Each card remembers its own state. Folding hides content only: a
+   folded card keeps working, it just is not on screen. */
+var CARDS_KEY = 'sheetAlign.cards.v1';
+var CARD_IDS = ['typesCard','masterCard','incCard'];
+var CARD_KEYS = { typesCard:'types', masterCard:'master', incCard:'incoming' };
+var cardState = {};                /* effective (open/folded) per card */
+var cardTouched = {};              /* only the cards the user actually decided on */
+
+function readCardState(){
+  var out = {};
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage){
+      var raw = window.localStorage.getItem(CARDS_KEY);
+      var p = raw ? JSON.parse(raw) : null;
+      if(p && typeof p === 'object'){
+        CARD_IDS.forEach(function(id){
+          var k = CARD_KEYS[id];
+          if(k in p) out[k] = p[k] ? 1 : 0;
+        });
+      }
+    }
+  }catch(e){ out = {}; }
+  return out;
+}
+function saveCardState(){
+  /* Persist only the cards the user decided on, so a fresh visitor is still
+     recognised as fresh next time. */
+  var out = {};
+  Object.keys(cardTouched).forEach(function(k){ out[k] = cardState[k] ? 1 : 0; });
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage)
+      window.localStorage.setItem(CARDS_KEY, JSON.stringify(out));
+  }catch(e){}
+}
+
+/* What the folded "Save Your Types" card shows: which type is in use. */
+function cardSummaryText(){
+  var names = [], current = '';
+  try{
+    var d = readSetups();
+    names = Object.keys(d.items || {});
+    current = d.current || '';
+  }catch(e){}
+  if(current && names.indexOf(current) >= 0) return 'Using \u201c' + current + '\u201d';
+  if(names.length === 1) return '1 type saved';
+  if(names.length > 1) return names.length + ' types saved';
+  return 'no types saved yet';
+}
+function refreshCardSummary(){
+  try{
+    var el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('typesSum') : null;
+    if(el) el.textContent = cardSummaryText();
+  }catch(e){}
+}
+
+function setCardCollapsed(cardId, collapsed, save){
+  var key = CARD_KEYS[cardId];
+  if(!key) return false;
+  collapsed = !!collapsed;
+  cardState[key] = collapsed ? 1 : 0;
+  try{
+    if(typeof document !== 'undefined' && document.getElementById){
+      var card = document.getElementById(cardId);
+      if(card) card.className = 'card' + (collapsed ? ' collapsed' : '');
+      var btn = document.getElementById(cardId.replace('Card', 'Toggle'));
+      if(btn){
+        btn.textContent = collapsed ? 'Show' : 'Hide';
+        if(btn.setAttribute) btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+    }
+  }catch(e){}
+  if(save !== false){ cardTouched[key] = collapsed ? 1 : 0; saveCardState(); }
+  if(cardId === 'typesCard') refreshCardSummary();
+  return collapsed;
+}
+
+function initCards(){
+  var stored = readCardState();
+  cardTouched = {};
+  cardState = {};
+  Object.keys(stored).forEach(function(k){ cardTouched[k] = stored[k]; });
+  CARD_IDS.forEach(function(id){ var k = CARD_KEYS[id]; cardState[k] = stored[k] ? 1 : 0; });
+  /* Day one: the types card is open. Once a type is actually in use it starts
+     folded, because that person only needs to paste. Their own clicks win. */
+  if(!('types' in stored)){
+    try{
+      var d = readSetups();
+      if(d.current && d.items && d.items[d.current]) cardState.types = 1;
+    }catch(e){}
+  }
+  CARD_IDS.forEach(function(cardId){
+    try{
+      var card = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById(cardId) : null;
+      if(!card) return;
+      /* gather the content (everything after the title bar) into one box, so the
+         button can point at it with aria-controls */
+      var kids = [], i, wrapped = false;
+      if(card.children && card.children.length){
+        for(i = 0; i < card.children.length; i++){
+          if(card.children[i] && card.children[i].className === 'cardbody') wrapped = true;
+        }
+        if(!wrapped) for(i = 1; i < card.children.length; i++) if(card.children[i]) kids.push(card.children[i]);
+      }
+      if(kids.length && typeof document.createElement === 'function' && card.appendChild){
+        var body = document.createElement('div');
+        body.className = 'cardbody';
+        body.id = cardId + 'Body';
+        card.appendChild(body);
+        kids.forEach(function(k){ if(body.appendChild) body.appendChild(k); });
+      }
+      var btn = document.getElementById(cardId.replace('Card', 'Toggle'));
+      if(btn && btn.setAttribute) btn.setAttribute('aria-controls', cardId + 'Body');
+      if(btn && btn.addEventListener) btn.addEventListener('click', function(){
+        setCardCollapsed(cardId, !cardState[CARD_KEYS[cardId]], true);
+      });
+      setCardCollapsed(cardId, !!cardState[CARD_KEYS[cardId]], false);
+    }catch(e){ /* a card that cannot fold must never break the tool */ }
+  });
+  refreshCardSummary();
+}
+
 /* ---------------- startup ---------------- */
 /* Ctrl/Cmd+Enter re-aligns without reaching for the button. */
 if(typeof document !== 'undefined' && document.addEventListener){
@@ -1671,6 +2093,9 @@ if(typeof window !== 'undefined' && window.addEventListener){
 }
 (function start(){
   if($('appVersion')) $('appVersion').textContent = 'v' + APP_VERSION;
+  initCards();
+  initPasteBox();
+  initBackground();
   refreshSetupSelect();
   var d = readSetups();
   if(d.current && d.items[d.current]){
@@ -1679,8 +2104,9 @@ if(typeof window !== 'undefined' && window.addEventListener){
   } else if(!storageWorks){
     setProfileMsg('This browser blocks saving \u2014 use Export to keep a copy for next time.');
   }
+  refreshCardSummary();
   run(true);
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e4105c488f11dc',t:'MTc4OTk0MTIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ed403cbc40f547',t:'MTc5MDAzNzU0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
