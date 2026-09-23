@@ -11,9 +11,9 @@
 <title>Sheet Aligner — align a new sheet to your master</title>
 <style>
   :root{
-    --bg:#f5f6f9; --card:#ffffff; --ink:#11151b; --muted:#5c6775; --line:#e4e8ef;
+    --bg:#e3eaf6; --card:#f2f6fc; --ink:#11151b; --muted:#5a6573; --line:#d6dfec;
     --accent:#1f6feb; --accent-d:#1552b8; --good:#0b6b45; --good-bg:#e6f6ee;
-    --warn:#8a5a00; --warn-bg:#fdf4de; --bad:#a3242b; --bad-bg:#fdecec; --gry-bg:#eef1f6;
+    --warn:#8a5a00; --warn-bg:#fbf0d7; --bad:#a3242b; --bad-bg:#fbe6e6; --gry-bg:#e1e8f3;
     --r:14px;
   }
   *{box-sizing:border-box}
@@ -32,7 +32,7 @@
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
     padding:18px;margin-bottom:16px;
-    box-shadow:0 1px 2px rgba(16,24,40,.04),0 20px 40px -30px rgba(20,60,140,.45)}
+    box-shadow:0 1px 2px rgba(16,24,40,.05),0 22px 44px -32px rgba(18,52,120,.5)}
   .step{display:flex;gap:10px;align-items:center;margin-bottom:12px}
   .num{flex:0 0 26px;height:26px;border-radius:50%;color:#fff;
     background:linear-gradient(145deg,#4b93f8,#1a5fd0);
@@ -48,6 +48,14 @@
     text-overflow:ellipsis;white-space:nowrap}
   .card:not(.collapsed) .card-sum{display:none}
   .pasteBox{margin-top:10px}
+  .pageswitch{display:flex;gap:6px;background:#e9eff8;border:1px solid var(--line);
+    border-radius:12px;padding:5px;margin:0 0 18px;width:fit-content}
+  .pgbtn{border:0;background:none;padding:8px 16px;border-radius:9px;cursor:pointer;
+    font-size:14px;font-weight:600;color:var(--muted)}
+  .pgbtn:hover{color:var(--ink)}
+  .pgbtn[aria-selected="true"]{background:var(--card);color:var(--accent-d);
+    box-shadow:0 1px 2px rgba(16,24,40,.08)}
+  .pgbtn:focus-visible{outline:2px solid #bcd4fb;outline-offset:2px}
   .link{background:none;border:0;padding:0;color:var(--accent-d);font-weight:600;font-size:13px;
     cursor:pointer;border-radius:6px;white-space:nowrap}
   .link:hover{text-decoration:underline}
@@ -55,10 +63,10 @@
 
   textarea,input,select,button{font:inherit}
   textarea{width:100%;min-height:86px;padding:10px 12px;border:1px solid var(--line);
-    border-radius:10px;background:#fcfdff;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    border-radius:10px;background:#edf3fb;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-size:13px;line-height:1.45;color:var(--ink)}
   .inline-input{flex:1 1 200px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;
-    background:#fcfdff;font-size:14px;min-width:170px}
+    background:#edf3fb;font-size:14px;min-width:170px}
   textarea:focus,input:focus,select:focus{outline:2px solid #bcd4fb;outline-offset:0;border-color:#9dbdf3}
 
   .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
@@ -66,9 +74,9 @@
   label.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:5px;
     text-transform:uppercase;letter-spacing:.4px}
 
-  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 14px;border-radius:10px;
+  .btn{border:1px solid var(--line);background:#edf3fa;color:var(--ink);padding:9px 14px;border-radius:10px;
     cursor:pointer;font-size:14px;font-weight:500}
-  .btn:hover{background:#f7f9fc}
+  .btn:hover{background:#e2ebf7}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.primary:hover{background:var(--accent-d)}
   .btn.sm{padding:6px 10px;font-size:13px}
@@ -96,7 +104,7 @@
 
   table{border-collapse:collapse;width:100%;font-size:13px}
   th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
-  th{background:#f7f9fc;font-weight:600;font-size:12.5px;color:#38424f;position:sticky;top:0}
+  th{background:#e9eff8;font-weight:600;font-size:12.5px;color:#38424f;position:sticky;top:0}
   .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
   optgroup{font-weight:700;color:#38424f}
   .pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:600;white-space:nowrap}
@@ -104,20 +112,20 @@
   .p-warn{background:var(--warn-bg);color:var(--warn)}
   .p-bad{background:var(--bad-bg);color:var(--bad)}
   .p-gray{background:var(--gry-bg);color:var(--muted)}
-  select{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:13px}
+  select{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:9px;background:#edf3fb;font-size:13px}
 
   .scroll{max-height:430px;overflow:auto;border-radius:10px;margin-top:10px}
   .scroll.tall{max-height:330px}
   .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
   .stats{display:flex;flex-wrap:wrap;gap:8px}
-  .stat{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-size:12.5px;color:#38424f}
+  .stat{background:#e9eff8;border:1px solid var(--line);border-radius:10px;padding:6px 11px;font-size:12.5px;color:#38424f}
   .stat b{font-weight:700;color:var(--ink)}
 
   .note{background:var(--warn-bg);border:1px solid #f0deb4;color:#6b4700;border-radius:10px;
     padding:10px 12px;font-size:13px;margin-top:12px}
   .note.ok{background:var(--good-bg);border-color:#bfe6d3;color:#0b5c3c}
   .note.bad{background:var(--bad-bg);border-color:#f3c9c9;color:#8b1f26}
-  .note.neutral{background:#f7f9fc;border-color:var(--line);color:#38424f}
+  .note.neutral{background:#e9eff8;border-color:var(--line);color:#38424f}
   .colref{color:#8a94a3;font-size:11px;font-weight:600;letter-spacing:.3px}
   .note-lead{font-weight:600}
   .nameList{display:none;margin-top:8px;padding-top:6px;border-top:1px solid rgba(0,0,0,.07);
@@ -127,6 +135,10 @@
     border-bottom:1px solid rgba(0,0,0,.05)}
   .nameRow:last-child{border-bottom:0}
   .nameRow .colref{flex:0 0 30px}
+  .nameRow .val{flex:0 0 auto;max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#33414f}
+  .nameRow .why{flex:1 1 auto;min-width:0;color:var(--muted);font-size:12px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .nameRow .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .note .link{color:inherit;text-decoration:underline}
   @media(max-width:700px){ .nameList.open{grid-template-columns:1fr} }
@@ -156,27 +168,27 @@
 
   .guide{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .growseg{display:flex;gap:10px;align-items:flex-start;padding:6px 10px;border-bottom:1px solid var(--line);
-    font-size:12.5px;line-height:1.45;background:#fff}
+    font-size:12.5px;line-height:1.45;background:#f8fbfe}
   .growseg:last-child{border-bottom:0}
   .growseg .rn{flex:0 0 46px;color:#8a94a3}
   .growseg .cells{flex:1 1 auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
     color:#38424f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .growseg .tag{flex:0 0 auto;font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
-  .g-ignored{background:#fafbfc;opacity:.62}
+  .g-ignored{background:#eef3fa;opacity:.62}
   .g-ignored .tag{background:var(--gry-bg);color:var(--muted)}
   .g-names{background:#eef4ff}
   .g-names .cells{color:var(--accent-d);font-weight:700}
   .g-names .tag{background:#d9e6ff;color:var(--accent-d)}
-  .g-skipped{background:#fafbfc}
+  .g-skipped{background:#eef3fa}
   .g-skipped .tag{background:var(--warn-bg);color:var(--warn)}
   .g-data .cells{color:#5c6775}
   .g-data .tag{background:var(--good-bg);color:var(--good)}
-  .gmore{padding:5px 10px;font-size:12px;color:var(--muted);background:#fafbfc}
+  .gmore{padding:5px 10px;font-size:12px;color:var(--muted);background:#eef3fa}
 
   /* ---------- animated background (decoration only) ---------- */
   #bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
-    background:linear-gradient(176deg,#f9fbff 0%,#eef3fb 48%,#e7eefa 100%)}
-  #bg .orb{position:absolute;border-radius:50%;opacity:.55;filter:blur(42px);
+    background:linear-gradient(176deg,#e8eef9 0%,#dee7f4 48%,#d1dced 100%)}
+  #bg .orb{position:absolute;border-radius:50%;opacity:.38;filter:blur(48px);
     transform:translate3d(0,0,0);will-change:transform}
   #bg .o1{width:44vmax;height:44vmax;left:-12vmax;top:-14vmax;
     background:radial-gradient(circle at 40% 40%,rgba(116,166,255,.62),rgba(116,166,255,0) 70%);
@@ -187,7 +199,7 @@
   #bg .o3{width:42vmax;height:42vmax;left:16vmax;bottom:-18vmax;
     background:radial-gradient(circle at 50% 50%,rgba(56,205,166,.40),rgba(56,205,166,0) 72%);
     animation:orbC 36s ease-in-out infinite}
-  #bg .grid{position:absolute;inset:-100px;opacity:.55;
+  #bg .grid{position:absolute;inset:-100px;opacity:.45;
     background-image:
       linear-gradient(to right,rgba(31,111,235,.075) 1px,transparent 1px),
       linear-gradient(to bottom,rgba(31,111,235,.075) 1px,transparent 1px);
@@ -223,6 +235,11 @@
   </div>
 </noscript>
 <div class="wrap">
+  <div class="pageswitch" role="tablist" aria-label="Which page">
+    <button type="button" class="pgbtn" id="pgAlign" role="tab" aria-selected="true">Align a sheet</button>
+    <button type="button" class="pgbtn" id="pgValidate" role="tab" aria-selected="false">Validation Calls</button>
+  </div>
+  <div id="pageAlign">
   <h1>Sheet Aligner</h1>
   <p class="sub">Paste your main sheet's columns once, save that as a type, then paste any new sheet &mdash; the columns are re-ordered to match.</p>
 
@@ -283,6 +300,7 @@
       <button type="button" class="link" id="masterChipsToggle" aria-expanded="false" hidden>Show all</button>
     </div>
     <div id="masterNote"></div>
+    <div id="typeStaleNote"></div>
   </section>
 
   <!-- STEP 2 -->
@@ -376,6 +394,127 @@
     <textarea id="output" class="out" readonly spellcheck="false" placeholder="Output appears here&hellip;"></textarea>
   </section>
 
+  </div><!-- /pageAlign -->
+
+  <div id="pageValidate" hidden>
+    <h1>Validation Calls</h1>
+    <p class="sub">Paste a type sheet and the validation fields are picked out of it, in the Validation Calls order &mdash; ready to copy across.</p>
+
+    <!-- V1 -->
+    <section class="card" id="vTargetCard">
+      <div class="step"><div class="num">1</div><h2>Validation Calls columns</h2></div>
+      <p class="hint">Paste the Validation Calls row of column names, or the whole tab. Saved on this computer.</p>
+      <textarea id="vTargetText" spellcheck="false" placeholder="Date	PSO	ID	Vendor	State	Channel	Education	Outlet Name&hellip;"></textarea>
+      <div class="row" style="margin-top:10px">
+        <div class="field" style="flex:0 1 200px">
+          <label class="lbl" for="vVendorSel">Vendor</label>
+          <select class="inline-input" id="vVendorSel">
+            <option value="Pivot Point">Pivot Point</option>
+            <option value="S4G">S4G</option>
+            <option value="BTRC">BTRC</option>
+          </select>
+        </div>
+        <div class="field" style="flex:0 1 190px">
+          <label class="lbl" for="vTargetRow">Column names on row</label>
+          <input class="inline-input" id="vTargetRow" type="number" min="1" step="1" value="1" />
+        </div>
+      </div>
+      <div class="chipline">
+        <div class="chips one-line" id="vTargetChips"></div>
+        <button type="button" class="link" id="vTargetToggle" aria-expanded="false" hidden>Show all</button>
+      </div>
+      <div id="vTargetNote"></div>
+    </section>
+
+    <!-- V2 -->
+    <section class="card" id="vSheetCard">
+      <div class="step"><div class="num">2</div><h2>The type sheet</h2></div>
+      <p class="hint">Paste the tab you are taking the details from. Only the validation fields are used.</p>
+      <textarea id="vSheetText" placeholder="Paste the whole type tab&hellip;"></textarea>
+      <div class="row" style="margin-top:10px">
+        <div class="field" style="flex:0 1 180px">
+          <label class="lbl" for="vHeaderRow">Column names on row</label>
+          <input class="inline-input" id="vHeaderRow" type="number" min="1" step="1" value="1" />
+        </div>
+        <div class="field" style="flex:0 1 180px">
+          <label class="lbl" for="vDataRow">First data row</label>
+          <input class="inline-input" id="vDataRow" type="number" min="1" step="1" value="2" />
+        </div>
+        <div class="field">
+          <label class="lbl" for="vLabel">Which type is this?</label>
+          <select class="inline-input" id="vLabel">
+            <option value="Type 1 - Retail Seller">Type 1 - Retail Seller</option>
+            <option value="Type 2 - Block Maker">Type 2 - Block Maker</option>
+            <option value="Type 3 - Retail+Blockmaker">Type 3 - Retail+Blockmaker</option>
+            <option value="Type 4 - Distributor">Type 4 - Distributor</option>
+            <option value="Type 5 - Sub-Dealer">Type 5 - Sub-Dealer</option>
+            <option value="Type 6 - Tile Seller">Type 6 - Tile Seller</option>
+            <option value="Type 7 - Cement Depot">Type 7 - Cement Depot</option>
+            <option value="Type 8 - Construction Projects">Type 8 - Construction Projects</option>
+            <option value="Type 9 - Unclassified">Type 9 - Unclassified</option>
+          </select>
+        </div>
+      </div>
+      <div id="vSheetNote"></div>
+    </section>
+
+    <!-- V3 -->
+    <section class="card" id="vMatchCard">
+      <div class="step"><div class="num">3</div><h2>Column matching</h2></div>
+      <p class="hint">Done automatically &mdash; change anything it got wrong, then train the type once.</p>
+      <div id="vMapArea"></div>
+      <div class="bar" style="margin-top:12px">
+        <div class="hint" id="vTrainNote" style="margin:0"></div>
+        <div>
+          <button type="button" class="btn sm primary" id="vBtnTrain">Train this type</button>
+          <button type="button" class="btn sm" id="vBtnUntrain" hidden>Clear training</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- V4 -->
+    <section class="card" id="vResultCard">
+      <div class="step"><div class="num">4</div><h2>Result &mdash; copy into Validation Calls</h2></div>
+      <p class="hint">Paste at the first empty row of column A in the Validation Calls sheet.</p>
+      <div class="bar">
+        <div class="stats" id="vStats"></div>
+        <div>
+          <button type="button" class="btn primary" id="vBtnCopy">Copy for Sheets</button>
+          <button type="button" class="btn" id="vBtnCsv">Download CSV</button>
+        </div>
+      </div>
+      <div id="vNotes"></div>
+      <div class="opts" style="margin-top:12px">
+        <label><input type="checkbox" id="vAddType" /> Add a <b>Type</b> column at the front (column A)</label>
+      </div>
+      <div class="scroll tall" id="vPreview"></div>
+      <textarea id="vOutput" class="out" readonly spellcheck="false" placeholder="Output appears here&hellip;"></textarea>
+    </section>
+    <!-- SHARING -->
+    <section class="card" id="vShareCard">
+      <div class="step"><div class="num star">&#9733;</div><h2>Trainings for the office</h2></div>
+      <p class="hint" id="vShareLine">Train a type once here, then send the trainings out.</p>
+      <div class="row">
+        <button type="button" class="btn sm" id="vBtnCopyAll">Copy all trainings</button>
+        <button type="button" class="btn sm" id="vBtnCopyOne">Copy this type only</button>
+        <button type="button" class="btn sm" id="vBtnExportAll">Export a file</button>
+        <label class="btn sm" for="vImportFile" style="display:inline-block;margin:0">Import a file<input type="file" id="vImportFile" accept=".json,application/json,text/plain" style="display:none" /></label>
+      </div>
+      <div style="margin-top:14px">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
+          <label class="lbl" style="margin:0" for="vPasteCode"><b>Training code box</b> (copy from here or paste code here):</label>
+          <div>
+            <button type="button" class="btn sm" id="vBtnShowCode">Show my training code</button>
+            <button type="button" class="btn sm" id="vBtnSelectCode">Select all text</button>
+            <button type="button" class="btn sm primary" id="vBtnImportCode">Import code from box</button>
+          </div>
+        </div>
+        <textarea id="vPasteCode" spellcheck="false" placeholder="Click 'Show my training code' to view your code here, or paste code here to import..." style="min-height:140px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+      <div id="vImportNote"></div>
+    </section>
+  </div><!-- /pageValidate -->
+
   <footer class="site-footer" role="contentinfo">
     <a class="credit" href="http://adewale-godspower.github.io/portfolio/" target="_blank" rel="noopener noreferrer"
        title="Gode-Technology &mdash; portfolio">
@@ -397,6 +536,9 @@
   </footer>
 </div>
 
+<!-- Office trainings. Baked into this file so every colleague gets them on
+     first open - nothing to paste, nothing to set up. Column names only. -->
+<script type="application/json" id="vOfficeTrainings">{"rev":0,"items":{}}</script>
 <script>
 /* ===================== LOGIC START ===================== */
 /* Everything in this block is pure logic (no DOM) so it can be tested. */
@@ -769,18 +911,47 @@ function dedupeKey(row, mode, headers){
   return v === '' ? null : 'k\u0001' + j + '\u0001' + v;
 }
 function dropDuplicates(rows, mode, outHeaders, existingRows){
-  var seen = {}, kept = [], dropped = 0;
+  var seen = {}, fromBatch = {}, kept = [], dropped = 0, skips = [], cap = 400;
   (existingRows || []).forEach(function(r){
     var k = dedupeKey(r, mode, outHeaders);
     if(k) seen[k] = 1;
   });
   rows.forEach(function(r){
     var k = dedupeKey(r, mode, outHeaders);
-    if(k && seen[k]){ dropped++; return; }
-    if(k) seen[k] = 1;
+    if(k && seen[k]){
+      dropped++;
+      if(skips.length < cap){
+        skips.push({ label: skipLabel(r, mode, outHeaders),
+          why: fromBatch[k] ? 'duplicate earlier in this batch' : 'already in your master' });
+      }
+      return;
+    }
+    if(k){ seen[k] = 1; fromBatch[k] = 1; }
     kept.push(r);
   });
-  return { rows: kept, dropped: dropped };
+  return { rows: kept, dropped: dropped, skips: skips };
+}
+/* A short, recognisable name for a skipped row: the value it was matched on,
+   or - when comparing whole rows - its first filled cell. */
+function skipLabel(row, mode, headers){
+  if(mode === 'all'){
+    for(var i = 0; i < row.length; i++){
+      var v = String(row[i] == null ? '' : row[i]).trim();
+      if(v) return v;
+    }
+    return '(blank row)';
+  }
+  var j = headers.indexOf(mode);
+  var v = (j >= 0) ? String(row[j] == null ? '' : row[j]).trim() : '';
+  return v || '(blank)';
+}
+function skipListHtml(btnId, listId, skips){
+  var rows = skips.map(function(x){
+    return '<div class="nameRow"><span class="val" title="' + esc(x.label) + '">' + esc(x.label) + '</span>' +
+      '<span class="why" title="' + esc(x.why) + '">' + esc(x.why) + '</span></div>';
+  }).join('');
+  return '<button type="button" class="link" id="' + btnId + '" aria-expanded="false">Show all ' +
+    skips.length + '</button><div class="nameList" id="' + listId + '">' + rows + '</div>';
 }
 function toTSV(rows){
   return rows.map(function(r){
@@ -815,8 +986,8 @@ var DEMO_NEW = [
 
 /* ---------------- DOM ---------------- */
 var $ = function(id){ return document.getElementById(id); };
-var APP_VERSION = '1.0';
-var state = { masterHeaders: [], masterRows: [], inHeaders: [], inRows: [], mapping: [], layout: null, outHeaders: [], copyCols: 0, outRows: [], dropped: 0, positional: false, headerRowWarn: '', widthWarn: '', bigSheet: false, headerLikeSkipped: 0, headerLikeSamples: [], mergedDupes: [], mergedConflicts: 0, dedupeMode: 'off', dedupeFallback: false, dedupeBroken: false, dedupeAllBlank: false };
+var APP_VERSION = '2.7';
+var state = { masterHeaders: [], masterRows: [], inHeaders: [], inRows: [], mapping: [], layout: null, outHeaders: [], copyCols: 0, outRows: [], dropped: 0, positional: false, headerRowWarn: '', widthWarn: '', bigSheet: false, headerLikeSkipped: 0, headerLikeSamples: [], mergedDupes: [], mergedConflicts: 0, dedupeMode: 'off', dedupeFallback: false, dedupeBroken: false, dedupeAllBlank: false, skips: [], skipCap: 400, staleSig: '' };
 
 /* ---------------- saved setups (profiles) ----------------
    Each person's setup is kept on their own machine. If the browser refuses
@@ -1351,6 +1522,7 @@ function renderMapping(){
   area.appendChild(div);
   wireCollapse('blankToggle', 'blankList', blanks.length);
   wireCollapse('leftOutToggle', 'leftOutList', dropped.length);
+  wireCollapse('skipToggle', 'skipList', (state.skips || []).length);
 }
 function renderPreview(){
   var mhLen = state.masterHeaders.length;
@@ -1404,7 +1576,16 @@ function renderOutput(){
   if(state.dedupeFallback) notes.push('<div class="note">No <b>' + esc(state.dedupeMode) + '</b> column in this sheet, so duplicates were compared on every column instead.</div>');
   if(state.dedupeBroken) notes.push('<div class="note bad">De-duplicating on <b>' + esc(state.dedupeMode) + '</b>, but this sheet has no such column \u2014 nothing was compared.</div>');
   if(state.dedupeAllBlank) notes.push('<div class="note bad">De-duplicating on <b>' + esc(state.dedupeMode) + '</b>, but that column is empty on every row \u2014 nothing was compared.</div>');
-  if(state.dropped) notes.push('<div class="note ok"><b>' + state.dropped + '</b> row(s) already in your master \u2014 skipped.</div>');
+  if(state.dropped){
+    var on = (state.dedupeMode && state.dedupeMode !== 'all')
+      ? ' \u2014 matched on <b>' + esc(state.dedupeMode) + '</b>' : ' \u2014 whole rows matched';
+    var skips = state.skips || [];
+    var sawAny = skips.slice(0, 2).map(function(x){ return esc(x.label); }).join(', ');
+    notes.push('<div class="note ok"><b>' + state.dropped + '</b> row' + (state.dropped === 1 ? '' : 's') +
+      ' skipped, already there' + on + '.<br><span class="hint" style="margin:4px 0 0">' +
+      (skips.length > 2 ? 'Starting with ' + sawAny + '\u2026' : sawAny) +
+      '</span>' + (skips.length ? skipListHtml('skipToggle', 'skipList', skips) : '') + '</div>');
+  }
   var gaps = gapReport(state.outRows.map(function(r){ return r.slice(0, state.copyCols); }),
                        state.outHeaders.slice(0, state.copyCols));
   if(gaps.length){
@@ -1573,8 +1754,10 @@ function runInner(rematch){
   var res = dropDuplicates(aligned, mode, layout.headers, existing);
   state.outRows = res.rows;
   state.dropped = res.dropped;
+  state.skips = res.skips || [];
 
   renderMapping(); renderPreview(); renderOutput();
+  renderStaleNote();
   autosaveSetup();
 }
 
@@ -1952,6 +2135,1113 @@ function initBackground(){
   }catch(e){ /* decoration must never break the tool */ }
 }
 
+/* ===================== VALIDATION CALLS PAGE =====================
+   The same matching engine, pointed the other way: the Validation Calls
+   columns are the target, the type sheet is the source, and only those
+   columns come out. Nothing extra is ever carried across. */
+var VAL_KEY = 'sheetAlign.validation.v1';
+var VAL_RULES_KEY = 'sheetAlign.valRules.v1';
+var vState = { target: [], source: [], rows: [], mapping: [], out: [], label: '' };
+
+function vNum(id, fallback){
+  var el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById(id) : null;
+  var n = el ? parseInt(el.value, 10) : NaN;
+  return (isFinite(n) && n >= 1) ? n : fallback;
+}
+function vText(id){
+  var el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById(id) : null;
+  return el ? String(el.value == null ? '' : el.value) : '';
+}
+function vChecked(id){
+  var el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById(id) : null;
+  return !!(el && el.checked);
+}
+/* The list of Validation Calls column names. */
+function readVTarget(){
+  var raw = vText('vTargetText');
+  if(!raw.trim()) return [];
+  var rows = trimBlankEdges(parseDelimited(raw, detectDelim(raw)));
+  var row = vNum('vTargetRow', 1);
+  var line = rows[row - 1] || [];
+  line = trimBlankEdges([line])[0] || [];
+  return line.map(function(x, i){
+    var t = String(x == null ? '' : x).trim();
+    return t || ('Column ' + (i + 1));
+  });
+}
+/* The type sheet: names row + data rows, same reading rules as step 1. */
+function readVSheet(){
+  var raw = vText('vSheetText');
+  if(!raw.trim()) return { headers: [], rows: [] };
+  var all = trimBlankEdges(parseDelimited(raw, detectDelim(raw)));
+  if(!all.length) return { headers: [], rows: [] };
+  var h = vNum('vHeaderRow', 1);
+  var d = Math.max(h + 1, vNum('vDataRow', h + 1));
+  var width = 0;
+  all.forEach(function(r){ width = Math.max(width, r.length); });
+  var headers = (all[h - 1] || []).slice();
+  while(headers.length < width) headers.push('');
+  headers = headers.map(function(x, i){
+    var t = String(x == null ? '' : x).trim();
+    return t || ('Column ' + (i + 1));
+  });
+  var body = all.slice(d - 1).filter(function(r){
+    return r.some(function(v){ return String(v == null ? '' : v).trim() !== ''; });
+  });
+  return { headers: headers, rows: normalizeWidth(body, headers.length) };
+}
+/* ---------------- training a type ----------------
+   Training = the COMPLETE answer for one type: which column of the type sheet
+   feeds each Validation Calls column. It is matched by column NAME on the way
+   in, so a reordered paste still lands correctly. Column names only - never a
+   single row of data. */
+var VAL_TRAIN_KEY = 'sheetAlign.valTrain.v1';
+function vReadTrainings(){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return {};
+    var o = JSON.parse(window.localStorage.getItem(VAL_TRAIN_KEY) || '{}');
+    return (o && typeof o === 'object') ? o : {};
+  }catch(e){ return {}; }
+}
+function vTrainingFor(label){
+  if(!label) return null;
+  var all = vReadTrainings();
+  var t = all[label];
+  if(t && typeof t === 'object' && t.map) return t;
+  /* Nothing of their own: fall back to the set that came with the file. */
+  var off = vOfficeFor(label);
+  return (off && off.map) ? off : null;
+}
+function vWriteTraining(label, rec){
+  var all = vReadTrainings();
+  if(rec) all[label] = rec; else delete all[label];
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage)
+      window.localStorage.setItem(VAL_TRAIN_KEY, JSON.stringify(all));
+    return true;
+  }catch(e){ return false; }
+}
+function vTrainedCount(rec){
+  if(!rec || !rec.map) return 0;
+  var n = 0;
+  Object.keys(rec.map).forEach(function(k){ if(rec.map[k]) n++; });
+  return n;
+}
+function vSameList(a, b){
+  if(!a || !b || a.length !== b.length) return false;
+  for(var i = 0; i < a.length; i++) if(normalize(a[i]) !== normalize(b[i])) return false;
+  return true;
+}
+/* The whole table, as names, ready to be saved. */
+function vCurrentMap(){
+  var map = {};
+  vState.mapping.forEach(function(m, j){
+    if(m.isVendorValue){
+      map[vState.target[j]] = '__VENDOR__';
+    } else if(m.combo && m.combo.type === 'latlong'){
+      map[vState.target[j]] = '__COMBO__:' + m.combo.lat + '+' + m.combo.lng;
+    } else {
+      map[vState.target[j]] = (m.i == null) ? null : vState.source[m.i];
+    }
+  });
+  return map;
+}
+function vTrainNow(){
+  var raw = vText('vLabel').trim();
+  if(!raw){ toast('Name the type in step 2 first \u2014 the training is saved under that name.', 'warn'); return false; }
+  var label = vLabelKey();
+  if(!vState.target.length || !vState.source.length){
+    toast('Paste the Validation Calls columns and the type sheet first.', 'warn'); return false;
+  }
+  var rec = { v:1, app:'sheet-aligner', version: APP_VERSION, name: label,
+    target: vState.target.slice(), map: vCurrentMap() };
+  var ok = vWriteTraining(label, rec);
+  if(!ok){ toast('Could not save the training on this computer.', 'warn'); return false; }
+  var n = vTrainedCount(rec);
+  toast('Trained \u201c' + label + '\u201d \u2014 ' + n + ' of ' + vState.target.length + ' columns.');
+  vRun();
+  return true;
+}
+function vUntrain(){
+  var raw = vText('vLabel').trim();
+  var label = vLabelKey();
+  if(!raw || !vTrainingFor(label)){ toast('There is no training to clear for this vendor & type.', 'warn'); return false; }
+  vWriteTraining(label, null);
+  toast('Training cleared for \u201c' + label + '\u201d.');
+  vRun();
+  return true;
+}
+/* A correction made by hand keeps the training current. */
+function vRefineTraining(target, sourceName){
+  var raw = vText('vLabel').trim();
+  if(!raw) return;
+  var label = vLabelKey();
+  var rec = vTrainingFor(label);
+  if(!rec) return;
+  rec.map[target] = sourceName || null;
+  vWriteTraining(label, rec);
+}
+function vRenderTrain(){
+  var note = $('vTrainNote'), btn = $('vBtnTrain'), clear = $('vBtnUntrain');
+  if(!note) return;
+  var raw = vText('vLabel').trim();
+  var label = vLabelKey();
+  var rec = raw ? vTrainingFor(label) : null;
+  var trained = vTrainedCount(rec);
+  if(btn) btn.textContent = rec ? 'Update training' : 'Train this type';
+  if(clear) clear.hidden = !rec;
+  if(!vState.target.length){ note.textContent = 'Paste the Validation Calls columns in step 1, then a type sheet in step 2.'; return; }
+  if(!label){ note.textContent = 'Name the type in step 2 \u2014 the training is saved under that name.'; return; }
+  if(!vState.source.length){ note.textContent = 'Paste a type sheet in step 2 to train \u201c' + label + '\u201d.'; return; }
+  if(!rec){
+    note.textContent = 'Not trained yet. Set the table above, then train \u201c' + label + '\u201d once.';
+    return;
+  }
+  var stale = !vSameList(rec.target, vState.target);
+  var src = vTrainingSource(label);
+  note.textContent = 'Trained for \u201c' + label + '\u201d \u2014 ' + trained + ' of ' + vState.target.length +
+    ' columns' + (src === 'office' ? ' (from the office set in this file)' : src === 'local' ? ' (your own)' : '') +
+    '.' + (stale ? ' The Validation Calls columns have changed since \u2014 update the training.' : '') +
+    (src === 'office' ? ' Train it here to make it your own.' : '');
+}
+
+/* ---------------- the office trainings that travel with the file ----------------
+   The block above can hold a trained set for the whole office. An office training
+   is used when the person has not trained that type themselves - their own work
+   always wins, and clearing their own reveals the office one again. */
+var vOffice = null;
+function vOfficeData(){
+  if(vOffice) return vOffice;
+  var out = { rev:0, items:{} };
+  try{
+    var el = (typeof document !== 'undefined' && document.getElementById) ? document.getElementById('vOfficeTrainings') : null;
+    var raw = el ? el.textContent : '';
+    var o = raw ? JSON.parse(raw) : null;
+    if(o && typeof o === 'object'){
+      if(typeof o.rev === 'number') out.rev = o.rev;
+      if(o.items && typeof o.items === 'object') out.items = o.items;
+    }
+  }catch(e){ out = { rev:0, items:{} }; }
+  vOffice = out;
+  return out;
+}
+function vOfficeNames(){
+  var d = vOfficeData(), out = [];
+  Object.keys(d.items || {}).forEach(function(k){
+    var r = d.items[k];
+    if(r && typeof r === 'object' && r.map && r.target) out.push(k);
+  });
+  return out.sort(function(a, b){ return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+}
+function vOfficeFor(label){ return (label && vOfficeData().items[label]) || null; }
+/* Where the training in force for a type came from. */
+function vLocalTrainingFor(label){
+  if(!label) return null;
+  var all = vReadTrainings();
+  var t = all[label];
+  return (t && typeof t === 'object' && t.map) ? t : null;
+}
+function vTrainingSource(label){
+  if(!label) return '';
+  if(vLocalTrainingFor(label)) return 'local';
+  return vOfficeFor(label) ? 'office' : '';
+}
+
+/* ---------------- sharing trainings ----------------
+   Same idea as sharing a type: a block of JSON a colleague can import. Only
+   column names and the mapping - never a row of data. */
+function vStoredTrainings(){
+  var all = vReadTrainings(), out = {};
+  var off = vOfficeData().items || {};
+  Object.keys(off).forEach(function(k){
+    var r = off[k];
+    if(r && typeof r === 'object' && r.map && r.target) out[k] = r;
+  });
+  Object.keys(all).forEach(function(k){ out[k] = all[k]; });   /* your own wins */
+  return out;
+}
+function vSafeRecord(r){
+  if(!r || typeof r !== 'object') return null;
+  if(!r.map || typeof r.map !== 'object' || !r.target || !Array.isArray(r.target)) return null;
+  if(r.target.length > 500) return null;
+  var map = {}, ok = true, n = 0;
+  Object.keys(r.map).forEach(function(k){
+    if(n++ > 500){ ok = false; return; }
+    var v = r.map[k];
+    if(v == null){ map[k] = null; return; }
+    if(typeof v !== 'string' || v.length > 300){ ok = false; return; }
+    map[k] = v;
+  });
+  if(!ok) return null;
+  return { v:1, app:'sheet-aligner', version: APP_VERSION,
+    name: String(r.name || '(unnamed type)').slice(0, 120),
+    target: r.target.slice(0, 500).map(function(x){ return String(x == null ? '' : x).slice(0, 200); }),
+    map: map };
+}
+function vExportText(label){
+  var items = {}, n = 0;
+  if(label){
+    var rec = vTrainingFor(label) || vOfficeFor(label);
+    if(!rec) return '';
+    items[label] = rec; n = 1;
+  } else {
+    items = vStoredTrainings();
+    n = Object.keys(items).length;
+  }
+  if(!n) return '';
+  var stamp = '';
+  try{ stamp = new Date().toISOString().slice(0, 10); }catch(e){}
+  return JSON.stringify({ v:1, app:'sheet-aligner', kind:'validation-trainings',
+    version: APP_VERSION, count:n, exportedAt:stamp, items: items }, null, 2);
+}
+/* Accepts a share code, a file, or a single type's training. */
+function vImportTrainingsText(text){
+  var parsed;
+  try{ parsed = JSON.parse(String(text || '')); }catch(e){ return { ok:false, error:'That does not look like a training code.' }; }
+  if(!parsed || typeof parsed !== 'object') return { ok:false, error:'That does not look like a training code.' };
+  if(parsed.app && parsed.app !== 'sheet-aligner') return { ok:false, error:'That code came from something else.' };
+
+  var incoming = {};
+  if(parsed.items && typeof parsed.items === 'object') incoming = parsed.items;
+  else if(parsed.map && parsed.target && parsed.name) incoming[parsed.name] = parsed;
+  else if(!parsed.map && !parsed.items) incoming = parsed;      /* a plain name -> record map */
+  else return { ok:false, error:'That code has no trainings in it.' };
+
+  var all = vReadTrainings(), added = 0, updated = 0, skipped = 0, names = [];
+  Object.keys(incoming).forEach(function(name){
+    var rec = vSafeRecord(incoming[name]);
+    if(!rec){ skipped++; return; }
+    rec.name = String(name).slice(0, 120) || rec.name;
+    if(all[rec.name]){ updated++; } else { added++; }
+    all[rec.name] = rec;
+    names.push(rec.name);
+  });
+  if(!added && !updated) return { ok:false, error:'Nothing usable in that code.' };
+  var ok = vWriteTrainings(all);
+  return { ok: ok, added: added, updated: updated, skipped: skipped, names: names,
+    error: ok ? '' : 'Could not save on this computer \u2014 the code is still in the box.' };
+}
+function vWriteTrainings(all){
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage)
+      window.localStorage.setItem(VAL_TRAIN_KEY, JSON.stringify(all));
+    return true;
+  }catch(e){ return false; }
+}
+function vImportReport(r){
+  var note = $('vImportNote');
+  if(!note) return;
+  if(!r || !r.ok){
+    note.innerHTML = r && r.error ? '<div class="note bad">' + esc(r.error) + '</div>' : '';
+    return;
+  }
+  var bits = [];
+  if(r.added) bits.push('<b>' + r.added + '</b> new');
+  if(r.updated) bits.push('<b>' + r.updated + '</b> updated');
+  if(r.skipped) bits.push('<b>' + r.skipped + '</b> skipped');
+  note.innerHTML = '<div class="note ok">Imported ' + bits.join(', ') + '. ' +
+    (r.names && r.names.length ? 'Types: <b>' + r.names.slice(0, 6).map(esc).join(', ') + '</b>' +
+      (r.names.length > 6 ? ' and ' + (r.names.length - 6) + ' more' : '') : '') + '</div>';
+}
+function vCopyTrainings(label){
+  var text = vExportText(label);
+  if(!text){ toast('There is no training to copy yet.', 'warn'); return false; }
+  var n = Object.keys(JSON.parse(text).items).length;
+  var done = function(){ toast('Training code copied \u2014 ' + n + ' type' + (n === 1 ? '' : 's') + '.'); };
+  if(typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, done);
+    return true;
+  }
+  var box = $('vPasteCode');
+  if(box){ box.value = text; togglePasteBoxOn('vPasteBox', 'vPasteToggle', true); }
+  toast('Press Ctrl/Cmd+C now, then send that text.', 'warn');
+  return true;
+}
+function vExportTrainingsFile(){
+  var text = vExportText('');
+  if(!text){ toast('There is no training to export yet.', 'warn'); return false; }
+  var filename = 'validation-trainings.json';
+  try{
+    var blob = new Blob([text], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    if(document.body) document.body.appendChild(a);
+    a.click();
+    if(a.remove) a.remove();
+    if(URL.revokeObjectURL) setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('Saved ' + filename);
+    return true;
+  }catch(e){
+    var box = $('vPasteCode');
+    if(box){ box.value = text; togglePasteBoxOn('vPasteBox', 'vPasteToggle', true); }
+    toast('Download blocked here \u2014 the code is in the box below.', 'warn');
+    return false;
+  }
+}
+/* The same open/close behaviour the aligner uses for its paste box. */
+function togglePasteBoxOn(boxId, btnId, show){
+  try{
+    var box = $(boxId), btn = $(btnId);
+    var closed = !!(box && box.hidden !== false);
+    var open = (show === undefined) ? closed : !!show;
+    if(box) box.hidden = !open;
+    if(btn){
+      btn.textContent = open ? 'Hide the paste box' : 'Paste a training code instead';
+      if(btn.setAttribute) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    return open;
+  }catch(e){ return false; }
+}
+function vRenderShareLine(){
+  var el = $('vShareLine');
+  if(!el) return;
+  var mine = Object.keys(vReadTrainings()).length;
+  var off = vOfficeNames().length;
+  var bits = [];
+  bits.push(mine ? '<b>' + mine + '</b> trained here' : 'None trained here yet');
+  if(off) bits.push('<b>' + off + '</b> built into this file for the office');
+  el.innerHTML = bits.join(' \u00b7 ') + '.';
+  var bAll = $('vBtnCopyAll'), bOne = $('vBtnCopyOne');
+  if(bAll) bAll.disabled = !(mine + off);
+  var activeKey = vLabelKey();
+  if(bOne) bOne.disabled = !vState.target.length || !vText('vLabel').trim() || !(vTrainingFor(activeKey) || vOfficeFor(activeKey));
+}
+
+/* Remembered corrections, per type. Same wording as the aligner:
+   "column in the type sheet = column in Validation Calls". */
+/* Vendor-specific sheet types */
+var VENDOR_TYPES = {
+  'Pivot Point': [
+    'Type 1 - Retail Seller',
+    'Type 2 - Block Maker',
+    'Type 3 - Retail+Blockmaker',
+    'Type 4 - Distributor',
+    'Type 5 - Sub-Dealer',
+    'Type 6 - Tile Seller',
+    'Type 7 - Cement Depot',
+    'Type 8 - Construction Projects',
+    'Type 9 - Unclassified'
+  ],
+  'S4G': [
+    'Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5', 'Type 6', 'Type 7', 'Type 8', 'Type 9'
+  ],
+  'BTRC': [
+    'Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5', 'Type 6', 'Type 7', 'Type 8', 'Type 9'
+  ]
+};
+
+function vUpdateTypeList(){
+  var sel = $('vLabel');
+  if(!sel || sel.tagName !== 'SELECT') return;
+  var v = vVendorKey();
+  var types = VENDOR_TYPES[v] || VENDOR_TYPES['Pivot Point'] || [];
+  var cur = sel.value;
+  sel.innerHTML = types.map(function(t){
+    return '<option value="' + esc(t) + '"' + (t === cur ? ' selected' : '') + '>' + esc(t) + '</option>';
+  }).join('');
+}
+function vVendorKey(){
+  var sel = $('vVendorSel');
+  var v = (sel && sel.value) ? sel.value.trim() : '';
+  return v;
+}
+function vLabelKey(){
+  var l = vText('vLabel').trim();
+  if(!l) return '(no type chosen)';
+  var v = vVendorKey();
+  if(v && l.indexOf(v) < 0) return v + ' — ' + l;
+  return l;
+}
+function vReadRules(){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return {};
+    var o = JSON.parse(window.localStorage.getItem(VAL_RULES_KEY) || '{}');
+    return (o && typeof o === 'object') ? o : {};
+  }catch(e){ return {}; }
+}
+function vRulesFor(label){
+  var all = vReadRules();
+  var lines = all[label] || [];
+  return vRulePairs(lines);
+}
+function vRulePairs(lines){
+  var pairs = [];
+  (lines || []).forEach(function(l){
+    var t = String(l == null ? '' : l).trim();
+    if(!t || t.charAt(0) === '#') return;
+    var cut = t.indexOf('=');
+    if(cut < 0) return;
+    var left = t.slice(0, cut).trim(), right = t.slice(cut + 1).trim();
+    if(left && right) pairs.push([left, right]);
+  });
+  return pairs;
+}
+function vLearnRule(sourceName, targetName){
+  var label = vLabelKey();
+  var line = sourceName + ' = ' + targetName;
+  var all = vReadRules();
+  var lines = (all[label] || []).slice();
+  var keep = lines.filter(function(l){
+    var p = vRulePairs([l])[0];
+    return !p || normalize(p[1]) !== normalize(targetName);   /* one rule per target */
+  });
+  keep.push(line);
+  all[label] = keep.slice(-80);
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage)
+      window.localStorage.setItem(VAL_RULES_KEY, JSON.stringify(all));
+  }catch(e){}
+  return line;
+}
+function vForgetRule(targetName){
+  var label = vLabelKey();
+  var all = vReadRules();
+  var lines = (all[label] || []).slice().filter(function(l){
+    var p = vRulePairs([l])[0];
+    return p && normalize(p[1]) !== normalize(targetName);
+  });
+  all[label] = lines;
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage)
+      window.localStorage.setItem(VAL_RULES_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+/* One row per Validation Calls column: which column of the type sheet feeds it. */
+/* Detection of latitude & longitude columns in source sheet */
+function vFindLatLong(sourceHeaders){
+  var latIdx = -1, lngIdx = -1;
+  sourceHeaders.forEach(function(h, idx){
+    var n = normalize(h);
+    if(latIdx < 0 && (n === 'latitude' || n === 'lat' || n === 'pickedlatitude' || n.indexOf('latitude') >= 0)) latIdx = idx;
+    if(lngIdx < 0 && (n === 'longitude' || n === 'long' || n === 'lng' || n === 'pickedlongitude' || n.indexOf('longitude') >= 0)) lngIdx = idx;
+  });
+  if(latIdx >= 0 && lngIdx >= 0 && latIdx !== lngIdx){
+    return { latIdx: latIdx, lngIdx: lngIdx, latName: sourceHeaders[latIdx], lngName: sourceHeaders[lngIdx] };
+  }
+  return null;
+}
+function buildValidationMapping(sourceHeaders, targetHeaders, pairs, trained){
+  var aliases = {};
+  (pairs || []).forEach(function(p){
+    var k = normalize(p[0]);
+    if(k) aliases[k] = normalize(p[1]);
+  });
+  var used = {}, rows = [];
+  targetHeaders.forEach(function(t, j){
+    var best = -1, bestScore = 0, i, sc;
+    for(i = 0; i < sourceHeaders.length; i++){
+      if(used[i]) continue;
+      sc = pairScore(sourceHeaders[i], t, aliases);
+      if(sc > bestScore){ bestScore = sc; best = i; }
+    }
+    if(best >= 0 && bestScore >= 0.6){
+      used[best] = 1;
+      rows.push({ i: best, j: j, score: bestScore, match: true });
+    } else {
+      rows.push({ i: null, j: j, score: 0, match: false });
+    }
+  });
+
+  /* Second pass: names that share one telling word, and that word appears in
+     only one Validation Calls column and only one type-sheet column. That is
+     how "Contact Name" finds "Contact Person" without ever guessing wildly.
+     Marked as a guess (0.72) so the table shows it is not certain. */
+  function words(h){
+    return normalize(h).split(' ').filter(function(w){ return w && w.length > 2 && !STOP[w]; });
+  }
+  var inTarget = {}, inSource = {};
+  targetHeaders.forEach(function(t){ words(t).forEach(function(w){ inTarget[w] = (inTarget[w] || 0) + 1; }); });
+  sourceHeaders.forEach(function(s2){ words(s2).forEach(function(w){ inSource[w] = (inSource[w] || 0) + 1; }); });
+  rows.forEach(function(m){
+    if(m.i != null) return;
+    var t = targetHeaders[m.j], pick = -1;
+    words(t).forEach(function(w){
+      if(pick >= 0) return;
+      if(inTarget[w] !== 1 || inSource[w] !== 1) return;
+      for(var i = 0; i < sourceHeaders.length; i++){
+        if(used[i]) continue;
+        if(words(sourceHeaders[i]).indexOf(w) >= 0){ pick = i; break; }
+      }
+    });
+    if(pick >= 0){ used[pick] = 1; m.i = pick; m.score = 0.72; m.match = true; }
+  });
+
+  /* Auto-detect: if Picked Geocode is unmatched, check for separate Latitude and Longitude columns */
+  var ll = vFindLatLong(sourceHeaders);
+  if(ll){
+    rows.forEach(function(m, j){
+      var t = targetHeaders[j];
+      var nt = normalize(t);
+      if((nt === 'picked geocode' || nt === 'geocode' || nt.indexOf('geocode') >= 0) && m.i == null && !m.combo){
+        m.combo = { type: 'latlong', lat: ll.latName, lng: ll.lngName };
+        m.match = true;
+        m.score = 0.88;
+      }
+    });
+  }
+
+  /* Vendor column can take the selected Vendor when trained with __VENDOR__ */
+  /* (Or user selects __VENDOR__ in the Step 3 dropdown) */
+
+  /* A trained mapping is what the person told us to do, so it wins outright:
+     matched by column NAME, never by position, so it survives a reordered paste. */
+  if(trained && trained.map){
+    var byName = {}, claimed = {};
+    sourceHeaders.forEach(function(s3, i){ var k = normalize(s3); if(!(k in byName)) byName[k] = i; });
+    rows.forEach(function(m, j){
+      var t = targetHeaders[j];
+      if(!Object.prototype.hasOwnProperty.call(trained.map, t)) return;
+      var want = trained.map[t];
+      if(!want){ m.i = null; m.combo = null; m.score = 0; m.match = false; m.trained = true; return; }
+      if(want === '__VENDOR__'){
+        m.i = null; m.combo = null; m.isVendorValue = true; m.score = 1; m.match = true; m.trained = true;
+        return;
+      }
+      if(typeof want === 'string' && want.indexOf('__COMBO__:') === 0){
+        var parts = want.replace('__COMBO__:', '').split('+');
+        var kLat = normalize(parts[0] || ''), kLng = normalize(parts[1] || '');
+        if((kLat in byName) && (kLng in byName)){
+          m.i = null;
+          m.combo = { type:'latlong', lat: sourceHeaders[byName[kLat]], lng: sourceHeaders[byName[kLng]] };
+          m.score = 1; m.match = true; m.trained = true;
+        } else {
+          m.trainedMissing = want.replace('__COMBO__:', 'Combine: ');
+        }
+        return;
+      }
+      var k = normalize(want);
+      if(!(k in byName)){ m.trainedMissing = want; return; }
+      var idx = byName[k];
+      if(claimed[idx] != null && claimed[idx] !== j){
+        rows[claimed[idx]].i = null;
+        rows[claimed[idx]].match = false;
+        rows[claimed[idx]].score = 0;
+      }
+      m.i = idx; m.combo = null; m.score = 1; m.match = true; m.trained = true;
+      claimed[idx] = j;
+    });
+  }
+  return rows;
+}
+function vTypeColumnOn(){ return vChecked('vAddType'); }
+function vOutHeaders(){
+  var h = vState.target.slice();
+  if(vTypeColumnOn()) h = ['Type'].concat(h);
+  return h;
+}
+function vBuildRows(){
+  var on = vTypeColumnOn();
+  var byName = {};
+  vState.source.forEach(function(s, idx){ byName[normalize(s)] = idx; });
+
+  return vState.rows.map(function(r){
+    var activeVendor = vVendorKey();
+    var line = vState.mapping.map(function(m){
+      if(m.isVendorValue){
+        return activeVendor;
+      }
+      if(m.combo && m.combo.type === 'latlong'){
+        var iLat = byName[normalize(m.combo.lat)];
+        var iLng = byName[normalize(m.combo.lng)];
+        var vLat = iLat != null && r[iLat] != null ? clean(r[iLat], true) : '';
+        var vLng = iLng != null && r[iLng] != null ? clean(r[iLng], true) : '';
+        if(vLat && vLng) return vLat + ', ' + vLng;
+        return vLat || vLng || '';
+      }
+      return m.i == null ? '' : clean(r[m.i] == null ? '' : r[m.i], true);
+    });
+    if(on) line = [vState.label || '(no type chosen)'].concat(line);
+    return line;
+  });
+}
+function vRun(){
+  vState.target = readVTarget();
+  vState.label = vText('vLabel').trim();
+  var sheet = readVSheet();
+  var merged = mergeDuplicateColumns(sheet.headers, sheet.rows);
+  vState.source = merged.headers;
+  vState.merged = merged.merged;
+  vState.mergedConflicts = merged.conflicts;
+  vState.rows = merged.rows;
+  vState.pairs = vRulesFor(vLabelKey());
+  vState.training = vTrainingFor(vLabelKey());
+  vState.mapping = buildValidationMapping(vState.source, vState.target, vState.pairs, vState.training);
+  vState.out = vBuildRows();
+  vSaveSettings();
+  vRenderChips(); vRenderMap(); vRenderResult(); vRenderTrain(); vRenderShareLine();
+}
+function vSaveSettings(){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return;
+    /* Columns and settings only - never the pasted rows. */
+    window.localStorage.setItem(VAL_KEY, JSON.stringify({
+      targetText: vText('vTargetText'), targetRow: vText('vTargetRow'),
+      vendor: vVendorKey(),
+      label: vText('vLabel'), headerRow: vText('vHeaderRow'), dataRow: vText('vDataRow'),
+      addType: vChecked('vAddType')
+    }));
+  }catch(e){}
+}
+function vLoadSettings(){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return;
+    var o = JSON.parse(window.localStorage.getItem(VAL_KEY) || 'null');
+    if(!o || typeof o !== 'object') return;
+    if(o.targetText && !vText('vTargetText')) $('vTargetText').value = o.targetText;
+    if(o.targetRow) $('vTargetRow').value = o.targetRow;
+    if(o.vendor && $('vVendorSel')) $('vVendorSel').value = o.vendor;
+    vUpdateTypeList();
+    if(o.label && !vText('vLabel')) $('vLabel').value = o.label;
+    if(o.headerRow) $('vHeaderRow').value = o.headerRow;
+    if(o.dataRow) $('vDataRow').value = o.dataRow;
+    if(o.addType) $('vAddType').checked = true;
+  }catch(e){}
+}
+
+/* ---------- what the validation page shows ---------- */
+function vRenderChips(){
+  var box = $('vTargetChips');
+  if(!box) return;
+  var h = vState.target;
+  box.innerHTML = h.map(function(x, i){
+    return '<span class="chip">' + (i + 1) + '. ' + esc(x) + '</span>';
+  }).join('');
+  setupOneLine(box, $('vTargetToggle'), h.length);
+  var note = $('vTargetNote');
+  if(!note) return;
+  note.innerHTML = h.length ? '' :
+    '<div class="note">Paste the Validation Calls column names above.</div>';
+}
+function vRenderMap(){
+  var area = $('vMapArea');
+  if(!area) return;
+  if(!vState.target.length){
+    area.innerHTML = '<div class="note">Paste the Validation Calls column names in step 1 first.</div>';
+    return;
+  }
+  if(!vState.source.length){
+    area.innerHTML = '<div class="note">Paste the type sheet in step 2 to see what matches.</div>';
+    return;
+  }
+  var html = '<div class="scroll"><table><thead><tr>' +
+    '<th style="width:34%">Validation Calls column</th>' +
+    '<th style="width:8%"></th>' +
+    '<th style="width:42%">Taken from this type sheet</th>' +
+    '<th style="width:16%"></th></tr></thead><tbody>';
+  vState.mapping.forEach(function(m){
+    var t = vState.target[m.j];
+    var opts = '<option value=""' + (m.i == null ? ' selected' : '') + '>&#10005; leave blank</option>';
+    var curVendor = vVendorKey();
+    if(normalize(t) === 'vendor'){
+      opts += '<option value="__VENDOR__"' + (m.isVendorValue ? ' selected' : '') + '>&#9733; Selected Vendor (' + esc(curVendor) + ')</option>';
+    }
+    var ll = vFindLatLong(vState.source);
+    if(ll && (normalize(t) === 'pickedgeocode' || normalize(t) === 'geocode')){
+      var comboVal = '__COMBO__:' + ll.latName + '+' + ll.lngName;
+      var isComboSel = (m.combo && m.combo.type === 'latlong') || (m.i == null && m.trainedMissing && m.trainedMissing.indexOf('Combine') >= 0);
+      opts += '<option value="' + esc(comboVal) + '"' + (isComboSel ? ' selected' : '') + '>&#9874; Combine: ' + esc(ll.latName) + ' + ' + esc(ll.lngName) + '</option>';
+    }
+    vState.source.forEach(function(s, i){
+      var isSel = (m.i === i && !m.combo && !m.isVendorValue);
+      opts += '<option value="' + esc(s) + '"' + (isSel ? ' selected' : '') + '>' + esc(s) + '</option>';
+    });
+    var pill = m.trainedMissing
+      ? '<span class="pill p-bad">trained name gone</span>'
+      : (m.trained ? '<span class="pill p-good">trained</span>'
+        : (m.i == null
+          ? '<span class="pill p-warn">blank</span>'
+          : (m.score >= 0.999 ? '<span class="pill p-good">exact</span>'
+            : (m.score >= 0.9 ? '<span class="pill p-good">close</span>'
+              : '<span class="pill p-warn">guessed</span>'))));
+    html += '<tr><td><b>' + esc(t) + '</b> <span class="colref">' + colLetter(m.j + (vTypeColumnOn() ? 1 : 0)) + '</span></td>' +
+      '<td>' + pill + '</td>' +
+      '<td><select data-vtarget="' + esc(t) + '">' + opts + '</select></td>' +
+      '<td><button type="button" class="link" data-vforget="' + esc(t) + '">Forget</button></td></tr>';
+  });
+  html += '</tbody></table></div>' +
+    '<p class="hint">One row per Validation Calls column. Corrections are remembered for this type.</p>';
+  area.innerHTML = html;
+  var sels = area.querySelectorAll ? area.querySelectorAll('select[data-vtarget]') : [];
+  for(var k = 0; k < sels.length; k++){
+    (function(sel){
+      sel.onchange = function(){
+        var target = sel.getAttribute('data-vtarget');
+        if(sel.value === '__VENDOR__'){
+          vRefineTraining(target, '__VENDOR__');
+          vState.training = vTrainingFor(vLabelKey());
+          vState.mapping = buildValidationMapping(vState.source, vState.target,
+            vRulesFor(vLabelKey()), vState.training);
+        } else if(sel.value && sel.value.indexOf('__COMBO__:') === 0){
+          vRefineTraining(target, sel.value);
+          vState.training = vTrainingFor(vLabelKey());
+          vState.mapping = buildValidationMapping(vState.source, vState.target,
+            vRulesFor(vLabelKey()), vState.training);
+        } else {
+          if(sel.value) vLearnRule(sel.value, target); else vForgetRule(target);
+          vState.training = vTrainingFor(vLabelKey());
+          vState.mapping = buildValidationMapping(vState.source, vState.target,
+            vRulesFor(vLabelKey()), vState.training);
+          vRefineTraining(target, sel.value || null);
+        }
+        vState.out = vBuildRows();
+        vRenderMap(); vRenderResult(); vRenderTrain(); vSaveSettings();
+      };
+    })(sels[k]);
+  }
+}
+function vRenderResult(){
+  var stats = $('vStats'), prev = $('vPreview'), notes = $('vNotes'), out = $('vOutput');
+  if(!stats) return;
+  if(!vState.target.length || !vState.rows.length){
+    stats.innerHTML = '';
+    if(prev) prev.innerHTML = '<div class="note" style="margin:12px">' +
+      (vState.target.length ? 'No rows read from the type sheet yet.' : 'Paste the Validation Calls columns to begin.') + '</div>';
+    if(notes) notes.innerHTML = '';
+    if(out) out.value = '';
+    return;
+  }
+  var headers = vOutHeaders();
+  var filled = vState.mapping.filter(function(m){ return m.i != null; }).length;
+  var blanks = vState.target.length - filled;
+  stats.innerHTML =
+    '<span class="stat"><b>' + vState.out.length + '</b> rows to paste</span>' +
+    '<span class="stat"><b>' + headers.length + '</b> columns</span>' +
+    '<span class="stat"><b>' + filled + '</b> filled' +
+    (blanks ? ', <b>' + blanks + '</b> blank' : '') + '</span>';
+
+  var wide = headers.length > 12;
+  var html = '<table><thead><tr><th class="colref">#</th>';
+  headers.forEach(function(h, i){
+    html += '<th>' + esc(h) + (wide ? '<br><span class="colref">' + colLetter(i) + '</span>' : '') + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+  var show = Math.min(vState.out.length, 12);
+  for(var r = 0; r < show; r++){
+    html += '<tr><td class="colref">' + (r + 1) + '</td>';
+    vState.out[r].forEach(function(v){ html += '<td>' + (String(v).trim() === '' ? '<span class="colref">&mdash;</span>' : esc(v)) + '</td>'; });
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  prev.innerHTML = html + (vState.out.length > show
+    ? '<div class="gmore">Showing the first ' + show + ' of ' + vState.out.length + ' rows &mdash; all of them are copied.</div>' : '');
+
+  var nn = [];
+  if(vState.training){
+    var gone = vState.mapping.filter(function(m){ return m.trainedMissing; });
+    var usedN = vState.mapping.filter(function(m){ return m.trained && m.i != null; }).length;
+    nn.push('<div class="note ok">Using the training saved for <b>' + esc(vState.training.name || vState.label) +
+      '</b> \u2014 <b>' + usedN + '</b> of <b>' + vState.target.length + '</b> columns.' +
+      (gone.length ? ' The trained column' + (gone.length === 1 ? ' \u201c' + esc(gone[0].trainedMissing) + '\u201d is' : 's ' +
+        gone.map(function(m){ return '\u201c' + esc(m.trainedMissing) + '\u201d'; }).join(', ') + ' are') +
+        ' not in this sheet, so ' + (gone.length === 1 ? 'that field is' : 'those fields are') + ' blank.' : '') +
+      '</div>');
+  } else if(vState.pairs && vState.pairs.length){
+    nn.push('<div class="note neutral"><b>' + vState.pairs.length + '</b> remembered correction' +
+      (vState.pairs.length === 1 ? '' : 's') + ' used. Train the type to fix the whole table at once.</div>');
+  }
+  if(blanks){
+    var blankCols = [];
+    vState.mapping.forEach(function(m){ if(m.i == null) blankCols.push(vState.target[m.j]); });
+    var lead = '<b>' + blanks + '</b> column' + (blanks === 1 ? '' : 's') + ' not in this sheet &mdash; will stay blank. ';
+    nn.push('<div class="note neutral">' + lead +
+      (blankCols.length <= 4 ? '<b>' + blankCols.map(esc).join(', ') + '</b>'
+        : nameListHtml('vBlankToggle', 'vBlankList', blankCols, false)) + '</div>');
+  }
+  if(vState.merged && vState.merged.length){
+    nn.push('<div class="note neutral">' +
+      vState.merged.length + ' repeated column name' + (vState.merged.length === 1 ? '' : 's') +
+      ' in the type sheet were merged before matching' +
+      (vState.mergedConflicts ? ' (' + vState.mergedConflicts + ' row clash' + (vState.mergedConflicts === 1 ? '' : 'es') + ')' : '') + '.</div>');
+  }
+  var gaps = gapReport(vState.out, headers);
+  if(gaps.length){
+    var shown = gaps.slice(0, 5).map(function(g){
+      return '<b>' + esc(g.header) + '</b> (' + g.col + ', ' + g.blanks + ' of ' + vState.out.length + ')';
+    }).join(', ');
+    nn.push('<div class="note neutral">Some cells are empty: ' + shown +
+      (gaps.length > 5 ? ', and ' + (gaps.length - 5) + ' more column(s)' : '') + '</div>');
+  }
+  if(notes) notes.innerHTML = nn.join('');
+  wireCollapse('vBlankToggle', 'vBlankList', 0);
+  if(out) out.value = toTSV(vState.out);
+}
+
+/* ---------- copy / download ---------- */
+function vCopy(){
+  var text = toTSV(vState.out);
+  if(!text){ toast('Nothing to copy yet.', 'warn'); return; }
+  var done = function(){
+    var n = vState.out.length;
+    $('vStats').innerHTML = '<span class="stat"><b>' + n + '</b> rows copied</span>' + $('vStats').innerHTML;
+    toast('Copied ' + n + ' row' + (n === 1 ? '' : 's') + ' for Sheets.');
+  };
+  if(typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done, function(){
+      if($('vOutput')){ try{ $('vOutput').select(); if(document.execCommand) document.execCommand('copy'); }catch(e){} }
+      done();
+    });
+    return;
+  }
+  if($('vOutput')){
+    $('vOutput').value = text;
+    try{ $('vOutput').select(); if(document.execCommand) document.execCommand('copy'); }catch(e){}
+    toast('Press Ctrl/Cmd+C now, then paste into your sheet.', 'warn');
+  }
+}
+function vCsv(){
+  if(!vState.out.length){ toast('Nothing to download yet.', 'warn'); return; }
+  var rows = [vOutHeaders()].concat(vState.out);
+  var csv = toCSV(rows);
+  var filename = 'validation-calls.csv';
+  try{
+    var blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    if(document.body) document.body.appendChild(a);
+    a.click();
+    if(a.remove) a.remove();
+    if(URL.revokeObjectURL) setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('Saved ' + filename);
+  }catch(e){
+    $('vOutput').value = csv;
+    toast('Download blocked here \u2014 the rows are in the box below.', 'warn');
+  }
+}
+
+/* ---------- pages ---------- */
+var PAGE_KEY = 'sheetAlign.page.v1';
+function showPage(which, save){
+  var validate = which === 'validate';
+  try{
+    if(typeof document !== 'undefined' && document.getElementById){
+      var a = document.getElementById('pageAlign'), v = document.getElementById('pageValidate');
+      if(a) a.hidden = validate;
+      if(v) v.hidden = !validate;
+      var ba = document.getElementById('pgAlign'), bv = document.getElementById('pgValidate');
+      if(ba) ba.setAttribute('aria-selected', validate ? 'false' : 'true');
+      if(bv) bv.setAttribute('aria-selected', validate ? 'true' : 'false');
+    }
+  }catch(e){}
+  if(save !== false){
+    try{
+      if(typeof window !== 'undefined' && window && window.localStorage)
+        window.localStorage.setItem(PAGE_KEY, validate ? 'validate' : 'align');
+    }catch(e){}
+  }
+  if(validate) vRun();
+  return validate;
+}
+function initPages(){
+  vLoadSettings();
+  try{
+    if(typeof document !== 'undefined' && document.getElementById){
+      var ba = document.getElementById('pgAlign'), bv = document.getElementById('pgValidate');
+      if(ba && ba.addEventListener) ba.addEventListener('click', function(){ showPage('align'); });
+      if(bv && bv.addEventListener) bv.addEventListener('click', function(){ showPage('validate'); });
+      ['vTargetText','vTargetRow','vVendorSel','vLabel','vHeaderRow','vDataRow','vAddType'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el || !el.addEventListener) return;
+        var act = function(){
+          if(id === 'vVendorSel') vUpdateTypeList();
+          vRunSoon();
+        };
+        el.addEventListener('input', act);
+        el.addEventListener('change', act);
+      });
+      ['vSheetText'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el || !el.addEventListener) return;
+        el.addEventListener('input', function(){ vRunSoon(); });
+      });
+      var wiring = [
+        ['vBtnCopyAll', function(){
+          var box = document.getElementById('vPasteCode');
+          var txt = vExportText('');
+          if(box && txt) box.value = txt;
+          vCopyTrainings('');
+        }],
+        ['vBtnCopyOne', function(){
+          var box = document.getElementById('vPasteCode');
+          var key = vText('vLabel').trim() ? vLabelKey() : '';
+          var txt = vExportText(key);
+          if(box && txt) box.value = txt;
+          vCopyTrainings(key);
+        }],
+        ['vBtnExportAll', function(){
+          var box = document.getElementById('vPasteCode');
+          var txt = vExportText('');
+          if(box && txt) box.value = txt;
+          vExportTrainingsFile();
+        }],
+        ['vBtnShowCode', function(){
+          var box = document.getElementById('vPasteCode');
+          var txt = vExportText('');
+          if(!txt){ toast('No trainings saved on this computer yet.', 'warn'); return; }
+          if(box){
+            box.value = txt;
+            box.focus();
+            box.select();
+          }
+          toast('Your training code is in the box below.');
+        }],
+        ['vBtnSelectCode', function(){
+          var box = document.getElementById('vPasteCode');
+          if(box && box.value){
+            box.focus();
+            box.select();
+            toast('Text selected! Press Ctrl+C or Cmd+C to copy.');
+          } else {
+            toast('Click "Show my training code" first.', 'warn');
+          }
+        }],
+        ['vBtnImportCode', function(){
+          var box = document.getElementById('vPasteCode');
+          var r = vImportTrainingsText(box ? box.value : '');
+          vImportReport(r);
+          if(r.ok){ vOffice = null; vRun(); toast('Trainings imported.'); }
+        }]
+      ];
+      wiring.forEach(function(pair){
+        var el = document.getElementById(pair[0]);
+        if(el && el.addEventListener) el.addEventListener('click', pair[1]);
+      });
+      var fi = document.getElementById('vImportFile');
+      if(fi && fi.addEventListener) fi.addEventListener('change', function(){
+        var file = fi.files && fi.files[0];
+        if(!file || typeof FileReader === 'undefined'){ toast('Could not read that file \u2014 paste the code instead.', 'warn'); return; }
+        var fr = new FileReader();
+        fr.onload = function(){
+          var r = vImportTrainingsText(fr.result);
+          vImportReport(r);
+          if(r.ok){ vOffice = null; vRun(); toast('Trainings imported.'); }
+        };
+        fr.onerror = function(){ toast('Could not read that file.', 'warn'); };
+        fr.readAsText(file);
+      });
+      var t1 = document.getElementById('vBtnTrain'); if(t1 && t1.addEventListener) t1.addEventListener('click', vTrainNow);
+      var t2 = document.getElementById('vBtnUntrain'); if(t2 && t2.addEventListener) t2.addEventListener('click', vUntrain);
+      var c1 = document.getElementById('vBtnCopy'); if(c1 && c1.addEventListener) c1.addEventListener('click', vCopy);
+      var c2 = document.getElementById('vBtnCsv'); if(c2 && c2.addEventListener) c2.addEventListener('click', vCsv);
+    }
+  }catch(e){}
+  var start = 'align';
+  try{
+    if(typeof window !== 'undefined' && window && window.localStorage){
+      var p = window.localStorage.getItem(PAGE_KEY);
+      if(p === 'validate') start = 'validate';
+    }
+  }catch(e){}
+  showPage(start, false);
+  if(start === 'validate') vRun();
+}
+var vTimer = null;
+function vRunSoon(){
+  clearTimeout(vTimer);
+  vTimer = setTimeout(function(){ try{ vRun(); }catch(e){
+    if(typeof console !== 'undefined' && console.error) console.error(e);
+    toast('Something went wrong \u2014 check the paste and try again.', 'warn');
+  } }, 180);
+}
+
+/* ---------------- is the saved type out of date? ----------------
+   The type holds the column list it was saved with. If the master pasted now
+   has different columns, say so - and offer to update the type in one click.
+   Nothing is overwritten until that click: autosaveSetup never touches a type
+   whose columns do not match. */
+var STALE_KEY = 'sheetAlign.staleNoted.v1';
+
+function typeStaleInfo(){
+  try{
+    if(!state || !state.masterHeaders || !state.masterHeaders.length) return null;
+    var d = readSetups();
+    if(!d.current || !d.items[d.current]) return null;
+    var saved = d.items[d.current].masterHeaders || [];
+    if(!saved.length) return null;
+    var savedN = {}, nowN = {};
+    saved.forEach(function(h){ var k = normalize(h); if(k) savedN[k] = 1; });
+    state.masterHeaders.forEach(function(h){ var k = normalize(h); if(k) nowN[k] = 1; });
+    var added = state.masterHeaders.filter(function(h){ return !savedN[normalize(h)]; });
+    var missing = saved.filter(function(h){ return !nowN[normalize(h)]; });
+    if(!added.length && !missing.length) return null;
+    /* The same rule autosaveSetup uses: a small, recognisable change is learned
+       automatically; a wholesale change is held back and needs a decision. */
+    return { name: d.current, savedCount: saved.length, nowCount: state.masterHeaders.length,
+      added: added, missing: missing, learns: headersLookLike(state.masterHeaders, saved),
+      sig: d.current + '|' + Object.keys(nowN).sort().join(',') + '|' + Object.keys(savedN).sort().join(',') };
+  }catch(e){ return null; }
+}
+function staleNoted(sig){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return false;
+    var o = JSON.parse(window.localStorage.getItem(STALE_KEY) || '{}');
+    return !!(o && o[sig]);
+  }catch(e){ return false; }
+}
+function markStaleNoted(sig){
+  try{
+    if(typeof window === 'undefined' || !window || !window.localStorage) return;
+    var o = JSON.parse(window.localStorage.getItem(STALE_KEY) || '{}');
+    if(!o || typeof o !== 'object') o = {};
+    o[sig] = 1;
+    var keys = Object.keys(o);
+    if(keys.length > 20){ var fresh = {}; keys.slice(-20).forEach(function(k){ fresh[k] = 1; }); o = fresh; }
+    window.localStorage.setItem(STALE_KEY, JSON.stringify(o));
+  }catch(e){}
+}
+function renderStaleNote(){
+  try{
+    if(typeof document === 'undefined' || !document.getElementById) return;
+    var box = document.getElementById('typeStaleNote');
+    if(!box) return;
+    var info = typeStaleInfo();
+    if(!info || (!info.learns && staleNoted(info.sig))){ if(box.innerHTML !== '') box.innerHTML = ''; return; }
+    state.staleSig = info.sig;
+    function list(what, arr){
+      if(!arr.length) return '';
+      var names = arr.length <= 3 ? '<b>' + arr.map(esc).join(', ') + '</b>'
+        : nameListHtml('staleToggle', 'staleList', arr, false);
+      return what + ' ' + names;
+    }
+    var parts = [];
+    if(info.added.length) parts.push(list(info.added.length + ' new column' + (info.added.length === 1 ? '' : 's') + ' in this sheet:', info.added));
+    if(info.missing.length) parts.push(list(info.missing.length + ' saved column' + (info.missing.length === 1 ? '' : 's') + ' not in this sheet:', info.missing));
+    var body = parts.join('<br>');
+
+    if(info.learns){
+      /* A small change: the type has already taken it on board. Say so plainly. */
+      box.innerHTML = '<div class="note ok"><b>Type \u201c' + esc(info.name) + '\u201d updated.</b> ' + body + '</div>';
+      if(info.added.length > 3 || info.missing.length > 3)
+        wireCollapse('staleToggle', 'staleList', Math.max(info.added.length, info.missing.length));
+      return;
+    }
+
+    /* A wholesale change: the type was deliberately left alone. */
+    box.innerHTML = '<div class="note">' +
+      '<b>This sheet does not look like \u201c' + esc(info.name) + '\u201d.</b> ' +
+      'The type was saved with <b>' + info.savedCount + '</b> columns; the sheet pasted now has <b>' +
+      info.nowCount + '</b> \u2014 and it was left untouched.<br>' + body +
+      '<div class="row" style="margin-top:8px"><button type="button" class="btn sm primary" id="btnTypeUpdate">' +
+      'Update the type</button><button type="button" class="btn sm" id="btnTypeStaleLater">Not now</button></div></div>';
+    if(info.added.length > 3 || info.missing.length > 3)
+      wireCollapse('staleToggle', 'staleList', Math.max(info.added.length, info.missing.length));
+    var upd = document.getElementById('btnTypeUpdate');
+    if(upd) upd.onclick = function(){
+      var name = state.staleSig ? state.staleSig.split('|')[0] : '';
+      if(!name || !saveSetupAs(name)){ toast('Could not update the type here.', 'warn'); return; }
+      setProfileMsg('Updated \u201c' + name + '\u201d with the columns pasted now.');
+      toast('Type \u201c' + name + '\u201d updated');
+      renderStaleNote();
+    };
+    var later = document.getElementById('btnTypeStaleLater');
+    if(later) later.onclick = function(){
+      if(state.staleSig) markStaleNoted(state.staleSig);
+      renderStaleNote();
+    };
+  }catch(e){}
+}
+
 /* ---------------- folding the cards ----------------
    Every card can fold down to its title bar, so the page is only as long as the
    work needs. Each card remembers its own state. Folding hides content only: a
@@ -1997,7 +3287,11 @@ function cardSummaryText(){
     names = Object.keys(d.items || {});
     current = d.current || '';
   }catch(e){}
-  if(current && names.indexOf(current) >= 0) return 'Using \u201c' + current + '\u201d';
+  if(current && names.indexOf(current) >= 0){
+    var stale = '';
+    try{ var inf = typeStaleInfo(); if(inf && !inf.learns) stale = ' \u2014 this sheet differs'; }catch(e){}
+    return 'Using \u201c' + current + '\u201d' + stale;
+  }
   if(names.length === 1) return '1 type saved';
   if(names.length > 1) return names.length + ' types saved';
   return 'no types saved yet';
@@ -2095,6 +3389,7 @@ if(typeof window !== 'undefined' && window.addEventListener){
   if($('appVersion')) $('appVersion').textContent = 'v' + APP_VERSION;
   initCards();
   initPasteBox();
+  initPages();
   initBackground();
   refreshSetupSelect();
   var d = readSetups();
@@ -2108,5 +3403,5 @@ if(typeof window !== 'undefined' && window.addEventListener){
   run(true);
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3ed403cbc40f547',t:'MTc5MDAzNzU0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3f6f3deea426636',t:'MTc5MDEzOTI3OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
