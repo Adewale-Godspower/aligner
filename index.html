@@ -382,7 +382,7 @@
     </div>
     <div class="opts">
       <label><input type="checkbox" id="keepExtras" checked> Keep the columns added at the back</label>
-      <label><input type="checkbox" id="outHasHeader"> Add a column-names line at the top (new sheet only)</label>
+      <label><input type="checkbox" id="outHasHeader" checked> Add a column-names line at the top (new sheet only)</label>
     </div>
     <details>
       <summary>Copy blocked, or pasted rows look plainer than the rest?</summary>
@@ -986,7 +986,7 @@ var DEMO_NEW = [
 
 /* ---------------- DOM ---------------- */
 var $ = function(id){ return document.getElementById(id); };
-var APP_VERSION = '2.7';
+var APP_VERSION = '2.0';
 var state = { masterHeaders: [], masterRows: [], inHeaders: [], inRows: [], mapping: [], layout: null, outHeaders: [], copyCols: 0, outRows: [], dropped: 0, positional: false, headerRowWarn: '', widthWarn: '', bigSheet: false, headerLikeSkipped: 0, headerLikeSamples: [], mergedDupes: [], mergedConflicts: 0, dedupeMode: 'off', dedupeFallback: false, dedupeBroken: false, dedupeAllBlank: false, skips: [], skipCap: 400, staleSig: '' };
 
 /* ---------------- saved setups (profiles) ----------------
@@ -3459,5 +3459,5 @@ if(typeof window !== 'undefined' && window.addEventListener){
   run(true);
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a40847fa289d8899',t:'MTc5MDMyMDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4085a256bc78899',t:'MTc5MDMyMTcyNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
